@@ -1,15 +1,14 @@
 'use server'
-import { interpret, createMachine, StateMachine, MachineConfig, assign, State, StateNode, EventObject, DoneInvokeEvent } from 'xstate';
-import { v4 as uuidv4 } from 'uuid';
+import { createMachine, MachineConfig, assign, StateNode, EventObject, DoneInvokeEvent } from 'xstate';
 
-interface IContext {
+export interface IContext {
   requestId: string;
   status: number;
   stack?: string[];
   // ... other context properties
 }
 
-interface IEvent extends EventObject {
+export interface IEvent extends EventObject {
   type: 'PAUSE_EXECUTION' | 'RESUME_EXECUTION' | 'RETRY' | string;
 }
 
@@ -20,49 +19,76 @@ interface StateMachineConfig {
 // Define the type for the step functions
 type StepFunction = (context: IContext) => Promise<any>;
 
-function statesMacro (stepsMap: Map<string, StepFunction>): StateMachineConfig {
+function statesMacro (stepsMap: Map<string, {id: string, func: StepFunction , type?: 'pause' | 'async'}>): StateMachineConfig {
   const stateMachineConfig: StateMachineConfig = {};
+  const steps = Array.from(stepsMap.entries());
 
-  stepsMap.forEach((value, key) => {
-    const retrievedFunction = value;
+  steps.forEach((value, index) => {
+    const {id, func, type} = value[1];
+    // console.log(`retrievedFunction: ${id}`);
 
-    if (!retrievedFunction) {
-      console.error(`Function not found for step: ${key}`);
+    if (!func) {
+      console.error(`Function not found for step: ${id}`);
       return;
     }
 
-    stateMachineConfig[retrievedFunction.name] = {
-      invoke: {
-        //@ts-ignore
-        id: retrievedFunction.name,
-        src: (context: IContext, event: IEvent) => retrievedFunction(context),
-        onDone: {
-          target: 'success',
-          actions: assign<IContext, DoneInvokeEvent<IContext>>((context, event) => {
-            return {
-              ...context,
-              ...event.data,
-            }
-          }),
+    if (type && type === 'pause') {
+      stateMachineConfig[id] = {
+        meta: {
+          type,
         },
-        onError: {
-          target: 'failure',
-          actions: assign<IContext, DoneInvokeEvent<IContext>>((context, event) => {
-            return {
-              ...context,
-              ...event.data,
-            }
-          }),
+        on: { 
+          RESUME_EXECUTION: {
+            // @ts-ignore
+            target: steps[index + 1]?.[1]?.id || 'success',
+            actions: assign<IContext, DoneInvokeEvent<IContext>>((context, event) => {
+              return {
+                ...context,
+                ...event.data,
+              }
+            })
+          },
+        },
+      };
+    }
+    else {
+      stateMachineConfig[id] = {
+        meta: {
+          type: 'async',
+        },
+        invoke: {
+          //@ts-ignore
+          id: id,
+          src: (context: IContext, event: IEvent) => func(context),
+          onDone: {
+            // target the next item in the array or success (final)
+            target: steps[index + 1]?.[1]?.id || 'success',
+            actions: assign<IContext, DoneInvokeEvent<IContext>>((context, event) => {
+              return {
+                ...context,
+                ...event.data,
+              }
+            }),
+          },
+          onError: {
+            target: 'failure',
+            actions: assign<IContext, DoneInvokeEvent<IContext>>((context, event) => {
+              return {
+                ...context,
+                ...event.data,
+              }
+            }),
+          }
         }
-      }
-    };
+      };
+    }
   });
-
+  console.log(JSON.stringify(stateMachineConfig));
   return stateMachineConfig;
 };
 
 export function machineMacro(
-  stepsMap: Map<string, StepFunction>, domain: string
+  stepsMap: Map<string, {id: string, func: StepFunction}>
 ) {
 
   const states = statesMacro(stepsMap)
@@ -82,20 +108,6 @@ export function machineMacro(
     },
     states: {
       ...states,
-      paused: {
-        on: { RESUME_EXECUTION: {
-          target: 'resume',
-          actions: assign<IContext, DoneInvokeEvent<IContext>>((context, event) => {
-            return {
-              ...context,
-              ...event.data,
-            }
-          })
-        } } // Transition to 'resume' on RESUME_EXECUTION
-      },
-      resume: {
-        type: 'history', // Shallow history state
-      },
       success: {
         type: 'final',
       },
@@ -103,61 +115,12 @@ export function machineMacro(
         type: 'final',
       },
     },
-    on: {
-      PAUSE_EXECUTION: {
-        target: '.paused',
-        actions: assign<IContext, DoneInvokeEvent<IContext>>((context, event) => {
-          return {
-            ...context,
-            ...event.data,
-          }
-        })
-      }, // Transitions to paused state from any state
-    }
   };
+
+  console.log(JSON.stringify(machineConfig))
 
   const machine = createMachine(machineConfig);
 
-  return (): Promise<IContext> => {
-    return new Promise((resolve, reject) => {
-      const withContext = machine.withContext({
-        status: 0,
-        requestId: uuidv4(),
-        stack: [],
-      });
-      const machineExecution = interpret(withContext).onTransition((state) => {
-        state.context.stack?.push(state.value as string);
-        switch (state.value) {
-          case "success":
-            // TODO logging
-            window.removeEventListener(`PAUSE_EXECUTION-${domain}`, pauseHandler);
-            window.removeEventListener(`RESUME_EXECUTION-${domain}`, resumeHandler);
-            resolve(state.context);
-            break;
-          case "failure":
-            // TODO error reporting
-            window.removeEventListener(`PAUSE_EXECUTION-${domain}`, pauseHandler);
-            window.removeEventListener(`RESUME_EXECUTION-${domain}`, resumeHandler);
-            reject(state.context);
-            break;
-        }
-      });
-  
-      machineExecution.start();
-  
-      const pauseHandler = (event: Event) => {
-        machineExecution.send('PAUSE_EXECUTION');
-      }
-  
-      const resumeHandler = (event: Event) => {
-        machineExecution.send('RESUME_EXECUTION');
-      }
-  
-      // To allow functions forward events we need to have React dispatch events on the window
-      // we need to use a domain name as well to sandbox events
-      window.addEventListener(`PAUSE_EXECUTION-${domain}`, pauseHandler);
-      window.addEventListener(`RESUME_EXECUTION-${domain}`, resumeHandler);
-    });
-  };
+  return machine;
 }
 
