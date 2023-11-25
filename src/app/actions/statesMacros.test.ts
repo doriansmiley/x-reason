@@ -1,18 +1,37 @@
-import { Interpreter, interpret } from 'xstate';
+import { interpret } from 'xstate';
 import { v4 as uuidv4 } from 'uuid';
-import { act } from 'react-dom/test-utils';
 
-import { machineMacro, IContext, IEvent } from './statesMacros'; // Adjust the import path
+import { machineMacro} from './statesMacros'; // Adjust the import path
 
 describe('machineMacro', () => {
   const mockSteps = new Map();
 
   beforeAll(() => {
-    mockSteps.set('step1', {id: 'step1', func: jest.fn().mockResolvedValue('Step 1 completed')});
-    mockSteps.set('step2', {id: 'step2', func: jest.fn().mockResolvedValue('Step 2 completed')});
-    mockSteps.set('pauseStep', {id: 'pauseStep', type: 'pause', func: jest.fn().mockResolvedValue('Step 3 completed')});
-    mockSteps.set('resumeStep', {id: 'resumeStep', func: jest.fn().mockResolvedValue('Step 4 completed')});
-    mockSteps.set('step5', {id: 'step5', func: jest.fn().mockResolvedValue('Step 5 completed')});
+    mockSteps.set('step1', {id: 'step1', func: jest.fn().mockResolvedValue({
+      step1Log: {
+        message: 'Step 1 completed',
+      }
+    })});
+    mockSteps.set('step2', {id: 'step2', func: jest.fn().mockResolvedValue({
+      step2Log: {
+        message: 'Step 2 completed',
+      }
+    })});
+    mockSteps.set('pauseStep', {id: 'pauseStep', type: 'pause', func: jest.fn().mockResolvedValue({
+      step3Log: {
+        message: 'Step 3 completed',
+      }
+    })});
+    mockSteps.set('resumeStep', {id: 'resumeStep', func: jest.fn().mockResolvedValue({
+      step4Log: {
+        message: 'Step 4 completed',
+      }
+    })});
+    mockSteps.set('step5', {id: 'step5', func: jest.fn().mockResolvedValue({
+      step5Log: {
+        message: 'Step 5 completed',
+      }
+    })});
   });
 
   it('should pause and resume the state machine', async () => {
@@ -33,6 +52,7 @@ describe('machineMacro', () => {
         switch (state.value) {
           case "success":
             // TODO logging
+            console.log(JSON.stringify(state.context));
             expect(mockSteps.get('resumeStep').func).toHaveBeenCalled();
             expect(machineExecution.machine.context.stack?.length).toBe(6);
             resolve(state.context);
