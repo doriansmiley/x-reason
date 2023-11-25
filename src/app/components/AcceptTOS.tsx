@@ -4,7 +4,7 @@ export default function AcceptTOS({ onClick }: {onClick: MouseEventHandler<HTMLB
     return(
         <div>
             <h1>AcceptTOS</h1>
-            <button onClick={onClick}></button>
+            <button onClick={onClick}>Next</button>
         </div>
     );
 }

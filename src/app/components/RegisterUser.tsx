@@ -4,7 +4,7 @@ export default function RegisterUser({ onClick }: {onClick: MouseEventHandler<HT
     return(
         <div>
             <h1>RegisterUser</h1>
-            <button onClick={onClick}></button>
+            <button onClick={onClick}>Next</button>
         </div>
     );
 }

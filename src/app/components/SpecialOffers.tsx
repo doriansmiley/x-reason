@@ -4,7 +4,7 @@ export default function SpecialOffers({ onClick }: {onClick: MouseEventHandler<H
     return(
         <div>
             <h1>SpecialOffers</h1>
-            <button onClick={onClick}></button>
+            <button onClick={onClick}>Next</button>
         </div>
     );
 }

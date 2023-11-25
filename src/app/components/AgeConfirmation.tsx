@@ -4,7 +4,7 @@ export default function AgeConfirmation({ onClick }: {onClick: MouseEventHandler
     return(
         <div>
             <h1>AgeConfirmation</h1>
-            <button onClick={onClick}></button>
+            <button onClick={onClick}>Next</button>
         </div>
     );
 }

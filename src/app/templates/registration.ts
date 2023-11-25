@@ -1,5 +1,5 @@
 export function registration(location: string, visits: string) {
-    `
+   const user = `
     User
     Using the following tools, create a user registration plan to register a user that will balance the user experience (ie the fewest steps and interactions) with business concerns like validating the user's age, upsell/cross-sell opportunities, etc.:
     - RegisterUser (required collects information required for registrations)
@@ -25,4 +25,7 @@ export function registration(location: string, visits: string) {
 
     This user is located in ${location }, and has visited our site ${visits} times in the last 30 days.
     `
+    const system = 'You are a helpful AI assistant tasked with helping register users.'
+
+    return {user, system}
 }

@@ -4,7 +4,7 @@ export default function PartnerPlugins({ onClick }: {onClick: MouseEventHandler<
     return(
         <div>
             <h1>PartnerPlugins</h1>
-            <button onClick={onClick}></button>
+            <button onClick={onClick}>Next</button>
         </div>
     );
 }
