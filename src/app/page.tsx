@@ -1,95 +1,58 @@
 import Image from 'next/image'
-import styles from './page.module.css'
+import { interpret } from 'xstate';
+import { v4 as uuidv4 } from 'uuid';
+
+import { machineMacro, persistUser, sendRegistrationEvent} from '@/app/actions'; // Adjust the import path
+import { AcceptTOS, AgeConfirmation, PartnerPlugins, RegisterUser, SelectPlan, SpecialOffers } from '@/app/components';
+import { registration } from '@/app/templates';
+
+import styles from '@/app/page.module.css';
+
+const steps = new Map();
+steps.set('AcceptTOS', {id: 'AcceptTOS', component: AcceptTOS, type: 'pause', func: new Promise((resolve) => {
+  resolve({AcceptTOS: {
+    message: 'Rendering the AcceptTOS components',
+  }});
+})});
+steps.set('AgeConfirmation', {id: 'AgeConfirmation', component: AgeConfirmation, type: 'pause', func: new Promise((resolve) => {
+  resolve({AgeConfirmation: {
+    message: 'Rendering the AgeConfirmation components',
+  }});
+})});
+steps.set('PartnerPlugins', {id: 'PartnerPlugins', component: PartnerPlugins, type: 'pause', func: new Promise((resolve) => {
+  resolve({PartnerPlugins: {
+    message: 'Rendering the PartnerPlugins components',
+  }});
+})});
+steps.set('RegisterUser', {id: 'RegisterUser', component: RegisterUser, type: 'pause', func: new Promise((resolve) => {
+  resolve({RegisterUser: {
+    message: 'Rendering the RegisterUser components',
+  }});
+})});
+steps.set('SelectPlan', {id: 'SelectPlan', component: SelectPlan, type: 'pause', func: new Promise((resolve) => {
+  resolve({SelectPlan: {
+    message: 'Rendering the SelectPlan components',
+  }});
+})});
+steps.set('SpecialOffers', {id: 'SpecialOffers', component: SpecialOffers, type: 'pause', func: new Promise((resolve) => {
+  resolve({SpecialOffers: {
+    message: 'Rendering the SpecialOffers components',
+  }});
+})});
+steps.set('PersistUser', {id: 'PersistUser', type: 'async', func: persistUser});
+steps.set('SendRegistrationEvent', {id: 'SendRegistrationEvent', type: 'async', func: sendRegistrationEvent});
+
+async function getSteps() {
+  const map = new Map();
+  const prompt = registration('CA, USA', '30');
+  
+}
+
 
 export default function Home() {
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      
     </main>
   )
 }

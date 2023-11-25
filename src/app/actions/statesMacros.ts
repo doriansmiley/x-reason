@@ -1,4 +1,3 @@
-'use server'
 import { createMachine, MachineConfig, assign, StateNode, EventObject, DoneInvokeEvent } from 'xstate';
 
 export interface IContext {
