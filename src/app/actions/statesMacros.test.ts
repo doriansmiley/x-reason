@@ -37,10 +37,10 @@ describe('machineMacro', () => {
   it('should pause and resume the state machine', async () => {
     return new Promise((resolve, reject) => {
       const testMachine = machineMacro(mockSteps);
-
+      const id = uuidv4();
       const withContext = testMachine.withContext({
         status: 0,
-        requestId: uuidv4(),
+        requestId: id,
         stack: [],
       });
 
@@ -52,7 +52,8 @@ describe('machineMacro', () => {
         switch (state.value) {
           case "success":
             // TODO logging
-            console.log(JSON.stringify(state.context));
+            // console.log(JSON.stringify(state.context));
+            expect(JSON.stringify(state.context)).toBe(JSON.stringify({status:0,requestId:id,stack:["step1","step2","pauseStep","resumeStep","step5","success"],step1Log:{message:"Step 1 completed"},step2Log:{message:"Step 2 completed"},step4Log:{message:"Step 4 completed"},step5Log:{message:"Step 5 completed"}}))
             expect(mockSteps.get('resumeStep').func).toHaveBeenCalled();
             expect(machineExecution.machine.context.stack?.length).toBe(6);
             resolve(state.context);
@@ -68,7 +69,7 @@ describe('machineMacro', () => {
               // Introduce a delay before resuming execution
               setTimeout(() => {
                 machineExecution.send('RESUME_EXECUTION');
-              }, 1000); // Delay of 1 second
+              }, 1); // Delay of 1 second
             }
         }
       });
