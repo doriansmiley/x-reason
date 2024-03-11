@@ -6,7 +6,7 @@ const createJestConfig = nextJest({ dir: './' })
 
 // Any custom config you want to pass to Jest
 const customJestConfig = {
-  testEnvironment: 'jest-environment-jsdom',
+  testEnvironment: 'node',
   preset: 'ts-jest',
 
   globals: {
@@ -21,7 +21,7 @@ const customJestConfig = {
   clearMocks: true,
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
-  setupFilesAfterEnv: ['@testing-library/jest-dom'],
+  setupFilesAfterEnv: ['@testing-library/jest-dom', './jest.setup.js'],
 
   moduleNameMapper: {
     'src/(.*)': '<rootDir>/src/$1',

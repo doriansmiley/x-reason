@@ -1,5 +1,7 @@
-import { StateConfig, program, Context, MachineEvent, Task } from "./";
 import { interpret } from "xstate";
+import 'openai/shims/node';
+
+import { StateConfig, program, Context, MachineEvent, Task } from "./";
 
 describe('Testing Programmer', () => {
   test("Test the program function passing state nodes array", async () => {

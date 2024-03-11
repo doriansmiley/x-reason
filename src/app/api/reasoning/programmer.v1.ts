@@ -74,6 +74,7 @@ function generateStateMachineConfig(statesArray: StateConfig[], functionCatalog:
 
   return {
     id: uuidv4(),
+    predictableActionArguments: true,
     initial: statesArray[0]?.id,
     context: {
       requestId: uuidv4(), // Replace with actual uniqueId function

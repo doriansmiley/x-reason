@@ -76,7 +76,7 @@ User Query:
 5. Generate the product formula.
 Translated into DSL:
 \`\`\`
-const stateConfigArray: StateConfig[] = [
+[
   {
     id: 'RecallSolutions',
     transitions: [

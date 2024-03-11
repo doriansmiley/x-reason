@@ -1,3 +1,5 @@
+import 'openai/shims/node';
+
 import engine from "./engine.v1";
 import { chatCompletion } from "@/app/api/openai";
 import { ChatCompletionCreateParams } from "openai/resources/index.mjs";
