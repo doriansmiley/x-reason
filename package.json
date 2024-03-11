@@ -10,6 +10,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@blueprintjs/core": "^5.10.0",
+    "@blueprintjs/icons": "^5.8.0",
     "@vercel/blob": "^0.22.1",
     "dotenv": "^16.4.5",
     "next": "14.0.3",
