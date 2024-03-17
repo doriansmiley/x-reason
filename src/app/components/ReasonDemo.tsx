@@ -1,15 +1,17 @@
 "use client";
-import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ReactComponentElement, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, Elevation, TextArea, Intent, Spinner, SpinnerSize, Collapse, Pre } from "@blueprintjs/core";
 
 import { StateConfig, program, Context, MachineEvent, Task, engine } from "@/app/api/reasoning";
 import { useMediator } from "@/app/utils";
 import Interpreter from "@/app/api/reasoning/Interpreter.v1.headed";
 
+
 function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBoundaryRef: RefObject<any> }) {
     const [query, setQuery] = useState<string>();
     const [states, setStates] = useState<StateConfig[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [componentToRender, setComponentToRender] = useState(() => (<div></div>));
 
     let callback = useCallback((event: MachineEvent) => console.log("default callback called"), []);
 
@@ -33,6 +35,15 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
         callback({ type: "CONTINUE", payload: { RecallSolutions: false } });
     }, [callback]);
 
+    const SampleComponent = useMemo(() => (<div>
+        <h1>Rendering Component for the RecallSolutions State</h1>
+        <p>This is an exmaple of how you can render components in response to state changes. Click the next button to proceed.</p>
+        <Button disabled={isLoading} onClick={onNext}>
+            Next
+        </Button>
+    </div>)
+        , [isLoading, onNext])
+
     // TODO figure out how to manage the available functions,I think these should be exposed via DI
     // TODO, I'd like all states to render a component, to do this set a state variable to the component to render
     // the implementation functions below can call something like setComponent(<Component ...props/>)
@@ -45,14 +56,8 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                         description:
                             "Recalls a smilar solution to the user query. If a solution is found it will set the existingSolutionFound attribute of the event params to true: `event.payload?.params.existingSolutionFound`",
                         implementation: (context: Context, event: MachineEvent) => {
-                            setTimeout(() => {
-                                // TODO all real implementation
-                                console.log('RecallSolutions implementation called');
-                                /*callback({
-                                    type: "CONTINUE",
-                                    payload: { RecallSolutions: 'no solution found' },
-                                });*/
-                            }, 1);
+                            console.log('RecallSolutions implementation called');
+                            setComponentToRender(SampleComponent);
                         },
                     },
                 ],
@@ -315,6 +320,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
         isLoading,
         functions: sampleCatalog,
         onNext,
+        componentToRender,
     };
 }
 
@@ -329,7 +335,7 @@ export default function ReasonDemo() {
     const eventBoundaryRef = useRef<any>(null);
     const ref = useRef<TextArea>(null);
 
-    const { query, states, onSubmit, isLoading, functions, onNext } = useLogic({ ref, eventBoundaryRef });
+    const { states, onSubmit, isLoading, functions, componentToRender } = useLogic({ ref, eventBoundaryRef });
     const props = { functions, states: states! }
 
     return (
@@ -347,9 +353,7 @@ export default function ReasonDemo() {
                         <Button disabled={isLoading} onClick={onSubmit}>
                             Submit
                         </Button>
-                        <Button disabled={isLoading} onClick={onNext}>
-                            Next
-                        </Button>
+                        {componentToRender}
                     </Card>
                 </div>
             </div>
