@@ -10,24 +10,15 @@ const isMutableRefObject = (ref: any): ref is MutableRefObject<EventTarget | nul
 
 function useLogic(input: InterpreterInput & { target: ForwardedRef<EventTarget | null> }) {
     const { functions, states, target, context } = input;
-    const [result] = useState<StateMachine<Context, any, MachineEvent>>(program(states, functions));
-    const [machine, setMachine] = useState<any>();
-    const [initialContext, setContext] = useState<Context>(context || {
+    const result: StateMachine<Context, any, MachineEvent> = program(states, functions);
+    const initialContext = context || {
         status: 0,
         requestId: "test",
         stack: [],
-    });
-    const [stateMachine] = useState(result.withContext(initialContext));
+    };
+    const machine = result.withContext(initialContext);
 
-    const callback = useCallback((event: MachineEvent) => {
-        if (!event) {
-            return;
-        }
-        console.log(`calling machineExecution.send type: ${event.type} payload: ${event.payload}`);
-        machine?.send(event.type, event.payload);
-    }, [machine]);
-
-    const t = interpret(stateMachine).onTransition((state) => {
+    const interpreter = interpret(machine).onTransition((state) => {
         if (isMutableRefObject(target) && target.current) {
             console.log(`onTransition called: state: ${state.value} dispatching TRANSITION target ${target.current}`);
             dispatchMediatedEvent(target.current, [
@@ -35,33 +26,34 @@ function useLogic(input: InterpreterInput & { target: ForwardedRef<EventTarget |
                 {
                     state: state.value,
                     context: state.context,
-                    callback,
                 },
             ]);
         }
-    })
+    }).start();
 
-    const [interpreter] = useState<typeof t>(t);
+    const callback = useCallback((event: MachineEvent) => {
+        if (!event || !event.type || !event.payload) {
+            return;
+        }
+        console.log(`calling machineExecution.send type: ${event.type} payload: ${event.payload}`);
+        interpreter.send(event.type, { payload: event.payload });
+    }, [interpreter]);
 
-    return { stateMachine, initialContext, callback, setMachine, interpreter };
+    return { initialContext, callback, interpreter };
 }
 // Using forwardRef to wrap your component allows you to receive a ref from a parent component
 const InterpreterRef = forwardRef(({ functions, states, children }: InterpreterInput & { children: React.ReactNode }, ref: ForwardedRef<EventTarget>) => {
-    const { stateMachine, initialContext, callback, setMachine, interpreter } = useLogic({ functions, states, target: ref });
-    useEffect(() => {
-        const machine = interpreter.start();
-        setMachine(interpreter.start());
-        if (isMutableRefObject(ref) && ref.current) {
-            dispatchMediatedEvent(ref.current, [
-                "TRANSITION",
-                {
-                    state: 'default',
-                    context: initialContext,
-                    callback,
-                },
-            ]);
-        }
-    }, [ref, initialContext, callback, stateMachine, setMachine, interpreter])
+    const { callback, interpreter } = useLogic({ functions, states, target: ref });
+    if (isMutableRefObject(ref) && ref.current) {
+        dispatchMediatedEvent(ref.current, [
+            "TRANSITION",
+            {
+                state: 'default',
+                context: interpreter.machine.context,
+                callback,
+            },
+        ]);
+    }
     // @ts-ignore
     return <div ref={ref}>{children}</div>;
 });

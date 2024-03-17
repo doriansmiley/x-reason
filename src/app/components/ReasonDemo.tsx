@@ -9,8 +9,30 @@ import Interpreter from "@/app/api/reasoning/Interpreter.v1.headed";
 function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBoundaryRef: RefObject<any> }) {
     const [query, setQuery] = useState<string>();
     const [states, setStates] = useState<StateConfig[]>([]);
-    const [callback, setCallback] = useState<(event: MachineEvent) => void>(() => () => console.log("default callback called"));
     const [isLoading, setIsLoading] = useState(false);
+
+    let callback = useCallback((event: MachineEvent) => console.log("default callback called"), []);
+
+    const mediator = useCallback(
+        (event: { type: string; payload: Record<string, any> }) => {
+            if (event?.payload?.callback) {
+                callback = event.payload.callback;
+            }
+        },
+        [],
+    );
+
+    useMediator<["TRANSITION", Record<string, any>]>("TRANSITION", mediator, eventBoundaryRef);
+
+    const onSubmit = useCallback(async () => {
+        setIsLoading(true);
+        setQuery(ref.current?.textareaElement?.value || "");
+    }, [ref, setQuery, setIsLoading]);
+
+    const onNext = useCallback(() => {
+        callback({ type: "CONTINUE", payload: { RecallSolutions: false } });
+    }, [callback]);
+
     // TODO figure out how to manage the available functions,I think these should be exposed via DI
     // TODO, I'd like all states to render a component, to do this set a state variable to the component to render
     // the implementation functions below can call something like setComponent(<Component ...props/>)
@@ -26,6 +48,10 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                             setTimeout(() => {
                                 // TODO all real implementation
                                 console.log('RecallSolutions implementation called');
+                                /*callback({
+                                    type: "CONTINUE",
+                                    payload: { RecallSolutions: 'no solution found' },
+                                });*/
                             }, 1);
                         },
                     },
@@ -38,6 +64,10 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                             setTimeout(() => {
                                 // TODO all real implementation
                                 console.log('GenerateIngredientsList implementation called');
+                                callback({
+                                    type: "CONTINUE",
+                                    payload: { GenerateIngredientsList: [] },
+                                });
                             }, 1);
                         },
                     },
@@ -181,24 +211,6 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
             ]),
         [callback],
     );
-
-    const mediator = useCallback(
-        ({ type, payload }: { type: string; payload: Record<string, any> }) => {
-            setCallback(() => payload.callback);
-        },
-        [setCallback],
-    );
-
-    useMediator<["TRANSITION", Record<string, any>]>("TRANSITION", mediator, eventBoundaryRef);
-
-    const onSubmit = useCallback(async () => {
-        setIsLoading(true);
-        setQuery(ref.current?.textareaElement?.value || "");
-    }, [ref, setQuery, setIsLoading]);
-
-    const onNext = useCallback(() => {
-        callback({ type: "CONTINUE", payload: { RecallSolutions: false } });
-    }, [callback]);
 
     useEffect(() => {
         const macro = async () => {
