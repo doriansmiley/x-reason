@@ -12,19 +12,8 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
     const [states, setStates] = useState<StateConfig[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [componentToRender, setComponentToRender] = useState(() => (<div></div>));
-
-    let callback = useCallback((event: MachineEvent) => console.log("default callback called"), []);
-
-    const mediator = useCallback(
-        (event: { type: string; payload: Record<string, any> }) => {
-            if (event?.payload?.callback) {
-                callback = event.payload.callback;
-            }
-        },
-        [],
-    );
-
-    useMediator<["TRANSITION", Record<string, any>]>("TRANSITION", mediator, eventBoundaryRef);
+    //const [callback, setCallback] = useState(() => (event: MachineEvent) => console.log("default callback called"))
+    const callback = useRef((event: MachineEvent) => console.log("default callback called"));
 
     const onSubmit = useCallback(async () => {
         setIsLoading(true);
@@ -32,7 +21,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
     }, [ref, setQuery, setIsLoading]);
 
     const onNext = useCallback(() => {
-        callback({ type: "CONTINUE", payload: { RecallSolutions: false } });
+        callback.current({ type: "CONTINUE", payload: { RecallSolutions: false } });
     }, [callback]);
 
     const SampleComponent = useMemo(() => (<div>
@@ -42,7 +31,22 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
             Next
         </Button>
     </div>)
-        , [isLoading, onNext])
+        , [isLoading, onNext]);
+
+    const SuccessComponent = useMemo(() => (<div>
+        <h1>Process Complete</h1>
+        <p>TODO add logs</p>
+    </div>)
+        , []);
+
+    function DefaultComponent({ message }: { message: string }) {
+        return (
+            <div>
+                <Spinner aria-label="Loading..." intent={Intent.PRIMARY} size={SpinnerSize.STANDARD} />
+                <p>{message}</p>
+            </div>
+        );
+    }
 
     // TODO figure out how to manage the available functions,I think these should be exposed via DI
     // TODO, I'd like all states to render a component, to do this set a state variable to the component to render
@@ -55,9 +59,10 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                     {
                         description:
                             "Recalls a smilar solution to the user query. If a solution is found it will set the existingSolutionFound attribute of the event params to true: `event.payload?.params.existingSolutionFound`",
+                        // this is an example of a visual state that requires user interaction
+                        component: (context: Context, event: MachineEvent) => SampleComponent,
                         implementation: (context: Context, event: MachineEvent) => {
                             console.log('RecallSolutions implementation called');
-                            setComponentToRender(SampleComponent);
                         },
                     },
                 ],
@@ -65,15 +70,17 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                     "GenerateIngredientsList",
                     {
                         description: "Generates a list of ingredients for a product formula",
+                        // this is an example of how you can render a component while the implementation function executes
+                        component: (context: Context, event: MachineEvent) => DefaultComponent({ message: 'Getting the ingredients list...' }),
                         implementation: (context: Context, event: MachineEvent) => {
+                            console.log('GenerateIngredientsList implementation called');
                             setTimeout(() => {
                                 // TODO all real implementation
-                                console.log('GenerateIngredientsList implementation called');
-                                callback({
+                                callback.current({
                                     type: "CONTINUE",
                                     payload: { GenerateIngredientsList: [] },
                                 });
-                            }, 1);
+                            }, 5000);
                         },
                     },
                 ],
@@ -82,14 +89,15 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                     {
                         description:
                             "Maintain a comprehensive database of cosmetic ingredients, their properties, potential combinations, and effects. This database includes natural and synthetic ingredients, their usual concentrations in products, and regulatory information.",
+                        component: (context: Context, event: MachineEvent) => DefaultComponent({ message: 'Searching the ingredients database...' }),
                         implementation: (context: Context, event: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                callback({
+                                callback.current({
                                     type: "CONTINUE",
                                     payload: { IngredientDatabase: [...context.GenerateIngredientsList, ["Bee Wax 1234 Special Proprietary", "30%", "A"]] },
                                 });
-                            }, 1);
+                            }, 5000);
                         },
                     },
                 ],
@@ -101,7 +109,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                         implementation: (context: Context, event: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                callback({ type: "CONTINUE", payload: { RegulatoryCheck: "no regulatory issues were found" } });
+                                callback.current({ type: "CONTINUE", payload: { RegulatoryCheck: "no regulatory issues were found" } });
                             }, 1);
                         },
                     },
@@ -114,7 +122,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                         implementation: (context: Context, event: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                callback({
+                                callback.current({
                                     type: "CONTINUE",
                                     payload: {
                                         ConcentrationEstimation: [
@@ -136,7 +144,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                         implementation: (context: Context, event: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                callback({ type: "CONTINUE", payload: { FormulationSimulation: "no available simulations were found" } });
+                                callback.current({ type: "CONTINUE", payload: { FormulationSimulation: "no available simulations were found" } });
                             }, 1);
                         },
                     },
@@ -148,7 +156,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                         implementation: (context: Context, event: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                callback({ type: "CONTINUE", payload: { ExpertReview: "Certified by Dorian Smiley on 2/2/24" } });
+                                callback.current({ type: "CONTINUE", payload: { ExpertReview: "Certified by Dorian Smiley on 2/2/24" } });
                             }, 1);
                         },
                     },
@@ -160,7 +168,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                         implementation: (context: Context, event: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                callback({ type: "CONTINUE", payload: { LabTesting: "Certified by Dorian Smiley on 2/2/24" } });
+                                callback.current({ type: "CONTINUE", payload: { LabTesting: "Certified by Dorian Smiley on 2/2/24" } });
                             }, 1);
                         },
                     },
@@ -172,7 +180,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                         implementation: (context: Context, event: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                callback({ type: "CONTINUE", payload: { Evaluation: 0.95 } });
+                                callback.current({ type: "CONTINUE", payload: { Evaluation: 0.95 } });
                             }, 1);
                         },
                     },
@@ -184,7 +192,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                         implementation: (context: Context, event: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                callback({ type: "CONTINUE", payload: { MarketResearch: "You market is as follows..." } });
+                                callback.current({ type: "CONTINUE", payload: { MarketResearch: "You market is as follows..." } });
                             }, 1);
                         },
                     },
@@ -196,7 +204,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                         implementation: (context: Context, event: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                callback({ type: "CONTINUE", payload: { CreateMarketing: "Here is your marketing claims..." } });
+                                callback.current({ type: "CONTINUE", payload: { CreateMarketing: "Here is your marketing claims..." } });
                             }, 1);
                         },
                     },
@@ -208,14 +216,30 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                         implementation: (context: Context, event: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                callback({ type: "CONTINUE", payload: { GenerateProductImage: "https://someurl.com" } });
+                                callback.current({ type: "CONTINUE", payload: { GenerateProductImage: "https://someurl.com" } });
                             }, 1);
                         },
                     },
                 ],
             ]),
-        [callback],
+        [callback, SampleComponent],
     );
+
+    const mediator = (event: { type: string; payload: Record<string, any> }) => {
+        if (event?.payload?.callback) {
+            if (event.payload.callback !== callback.current) {
+                callback.current = event.payload.callback;
+            }
+        }
+        const component = sampleCatalog.get(event?.payload?.state)?.component;
+        if (component) {
+            setComponentToRender(component(event?.payload?.context, event));
+        } else if (event?.payload?.state === 'success') {
+            setComponentToRender(SuccessComponent);
+        }
+    };
+
+    useMediator<["TRANSITION", Record<string, any>]>("TRANSITION", mediator, eventBoundaryRef);
 
     useEffect(() => {
         const macro = async () => {

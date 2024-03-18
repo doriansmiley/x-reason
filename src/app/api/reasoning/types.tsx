@@ -16,6 +16,7 @@ export type MachineEvent = {
 export type Task = {
   description: string;
   implementation: (context: Context, event: MachineEvent) => void;
+  component?: (context: Context, event: MachineEvent) => JSX.Element;
 };
 
 export interface StateMachineConfig {
