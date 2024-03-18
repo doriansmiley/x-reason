@@ -39,7 +39,7 @@ function generateStateConfig(state: StateConfig, functionCatalog: Map<string, Ta
       }
     },
   };
-
+  // TODO augment with retrievedFunction.transitions.
   if (state.transitions) {
     stateConfig.on = {
       CONTINUE: state.transitions.filter((transition) => transition.on === "CONTINUE").map((transition) => getTransition(transition)),

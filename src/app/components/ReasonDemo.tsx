@@ -2,7 +2,7 @@
 import { ReactComponentElement, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, Elevation, TextArea, Intent, Spinner, SpinnerSize, Collapse, Pre } from "@blueprintjs/core";
 
-import { StateConfig, program, Context, MachineEvent, Task, engine } from "@/app/api/reasoning";
+import { StateConfig, program, Context, MachineEvent, Task, engineV2 as engine } from "@/app/api/reasoning";
 import { useMediator } from "@/app/utils";
 import Interpreter from "@/app/api/reasoning/Interpreter.v1.headed";
 
@@ -49,8 +49,9 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
     }
 
     // TODO figure out how to manage the available functions,I think these should be exposed via DI
-    // TODO, I'd like all states to render a component, to do this set a state variable to the component to render
-    // the implementation functions below can call something like setComponent(<Component ...props/>)
+    // TODO Add a conditional attribute and refactor the programmer to use it for conditions on transitions
+    // This will allow for both standard algorithms and LLMs to determine if a state should transition
+    // make sure to update the prompts/training data to remove cond attributes
     const sampleCatalog = useMemo(
         () =>
             new Map<string, Task>([

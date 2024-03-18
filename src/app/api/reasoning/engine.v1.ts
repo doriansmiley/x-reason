@@ -23,7 +23,7 @@ async function getThread() {
 }
 
 async function solve(query: string, thread?: Thread): Promise<string> {
-  // TODO get the prompts and send request to API
+  // TODO remove the use of the threads API and go with completions
   if (!thread) {
     thread = await getThread();
   }
@@ -35,9 +35,7 @@ async function solve(query: string, thread?: Thread): Promise<string> {
 }
 
 async function program(query: string, functionCatalog: string, thread?: Thread): Promise<StateConfig[]> {
-  // TODO get the prompts and send request to API, then parse the StateConfig[]
-  // if we fail to parse add retry
-  // TODO get the prompts and send request to API
+  // TODO remove the use of the threads API and go with completions
   if (!thread) {
     thread = await getThread();
   }
@@ -47,7 +45,7 @@ async function program(query: string, functionCatalog: string, thread?: Thread):
   const result = await sendMessage(thread, user, system, process.env.CHEMLI_SOLVER_ASSISTANT);
   const value = (result?.content[0] as MessageContentText).text.value;
   const unwrapped = value.match(/```json\s+([\s\S]*?)\s+```/)?.[1] || value;
-
+  // TODO add a completion to check that the state ID's match the function catalog. Either the state matches or it is dropped
   return JSON.parse(unwrapped) as StateConfig[];
 }
 
