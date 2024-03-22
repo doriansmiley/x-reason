@@ -10,6 +10,8 @@ function getTransition(transition: { target: string; cond?: string; actions?: st
   };
   if (transition.cond) {
     transitionConfig.cond = (context: Context, event: MachineEvent) => {
+      // TODO improve this by using a function supplied by the function catalog which can either be
+      // a classical algorithm or a call to an LLM that returns true or false
       return eval(transition.cond!);
     };
   }

@@ -17,6 +17,7 @@ export type Task = {
   description: string;
   implementation: (context: Context, event: MachineEvent) => void;
   component?: (context: Context, event: MachineEvent) => JSX.Element;
+  transitions?: Map<"CONTINUE" | "ERROR", (context: Context, event: MachineEvent) => boolean>
 };
 
 export interface StateMachineConfig {

@@ -72,14 +72,63 @@ export async function programmer(query: string, functionCatalog: string) {
   Approach:
 
   Chemli carefully analyzes the user's query, breaking it down into discrete steps.
-  For each step, Chemli identifies the corresponding function in the functionCatalog.
   If a user's instruction doesn't match a function, Chemli judiciously decides to omit it to maintain the integrity of the state machine.
   Chemli never outputs a state where the id is not found in the provided function catalog.
   Chemli constructs the StateConfig array with precision, ensuring that all transitions, conditions, and actions are correctly represented.
   In case of parallel states, Chemli meticulously organizes them under a parent state while maintaining the clarity of the structure.
   Chemli remains focused on the goal of creating a functional and efficient state machine configuration that meets the user's requirements.
   Chemli is never chatty.
-  Chemli only responds in JSON using the Chemli DSL:
+  `;
+
+  const user = `
+  Output the state machine for the sets below using the Chemli DSL using the provided function catalog.
+  ### Start User Query ###
+  ${query}
+  ### End User Query ###
+  ### Start Function Catalog ###
+  ${functionCatalog}
+  ### End Function Catalog ###
+Let's take this step by step:
+1. For each step in the user query, identify the corresponding function in the functionCatalog.
+1.1 Construct the StateConfig instance setting the id attribute equal to the retrieved function id.
+1.2 Add the transitions for the CONTINUE and ERROR events with the target equal to the function in the functionCatalog
+2. If states are to be executed in parallel be sure to use the type: 'parallel' state node (examples below). 
+Note parallel states nodes are required to target their own success and failure nodes and there must be an onDone attribute!!!
+\`\`\`
+{
+    id: 'parallelChecks',
+    type: 'parallel',
+    states: [
+      {
+        id: 'RegulatoryCheck',
+        transitions: [
+          { on: 'CONTINUE', target: 'success' },
+          { on: 'ERROR', target: 'failure' }
+        ]
+      },
+      {
+        id: 'ConcentrationEstimation',
+        transitions: [
+          { on: 'CONTINUE', target: 'success' },
+          { on: 'ERROR', target: 'failure' }
+        ]
+      },
+      success: {
+              type: "final",
+      },
+      failure: {
+              type: "final",
+      }
+    ],
+    onDone: [
+      { target: 'FormulationGeneration' }
+    ]
+  },
+\`\`\`
+3. Ignore conditions like "if then else" statements
+
+Please note the success and failure states do not appear in the function catalog as they are "special" final states required for all state machines.
+Only responds in JSON using the Chemli DSL:
   ### Start Chemli DSL TypeScript definition ###
   \`\`\`
   export type StateConfig = {
@@ -87,29 +136,17 @@ export async function programmer(query: string, functionCatalog: string) {
   transitions?: Array<{
     on: string;
     target: string;
-    cond?: string;
     actions?: string;
   }>;
   type?: 'parallel' | 'final';
   onDone?: Array<{
     target: string;
-    cond?: string;
     actions?: string;
   }>;
   states?: StateConfig[];
 };
-  ### End Chemli DSL TypeScript definition ###
-  All Chemli responses are sent to JSON.parse.
-  `;
-
-  const user = `
-  Output the process model of the user's query as a state machine using the Chemli DSL using the provided function catalog.
-  ### Start User Query ###
-  ${query}
-  ### End User Query ###
-  ### Start Function Catalog ###
-  ${functionCatalog}
-  ### End Function Catalog ###
+### End Chemli DSL TypeScript definition ###
+All responses are sent to JSON.parse.
 ### Start Example ###
 Example: Translating User Queries into DSL
 User Query:
@@ -158,6 +195,12 @@ Answer:
           { on: 'CONTINUE', target: 'success' },
           { on: 'ERROR', target: 'failure' }
         ]
+      },
+      success: {
+              type: "final",
+      },
+      failure: {
+              type: "final",
       }
     ],
     onDone: [

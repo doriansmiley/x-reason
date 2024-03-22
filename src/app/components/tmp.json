@@ -1,0 +1,172 @@
+[
+    {
+        "id": "RecallSolutions",
+        "transitions": [
+            {
+                "on": "CONTINUE",
+                "target": "IngredientDatabase"
+            },
+            {
+                "on": "ERROR",
+                "target": "failure"
+            }
+        ]
+    },
+    {
+        "id": "IngredientDatabase",
+        "transitions": [
+            {
+                "on": "CONTINUE",
+                "target": "parallelChecks"
+            },
+            {
+                "on": "ERROR",
+                "target": "failure"
+            }
+        ]
+    },
+    {
+        "id": "parallelChecks",
+        "type": "parallel",
+        "states": [
+            {
+                "id": "RegulatoryCheck",
+                "transitions": [
+                    {
+                        "on": "CONTINUE",
+                        "target": "success"
+                    },
+                    {
+                        "on": "ERROR",
+                        "target": "failure"
+                    }
+                ]
+            },
+            {
+                "id": "ConcentrationEstimation",
+                "transitions": [
+                    {
+                        "on": "CONTINUE",
+                        "target": "success"
+                    },
+                    {
+                        "on": "ERROR",
+                        "target": "failure"
+                    }
+                ]
+            },
+            {
+                "id": "success",
+                "type": "final"
+            },
+            {
+                "id": "failure",
+                "type": "final"
+            }
+        ],
+        "onDone": [
+            {
+                "target": "FormulationSimulation"
+            }
+        ]
+    },
+    {
+        "id": "FormulationSimulation",
+        "transitions": [
+            {
+                "on": "CONTINUE",
+                "target": "ExpertReview"
+            },
+            {
+                "on": "ERROR",
+                "target": "failure"
+            }
+        ]
+    },
+    {
+        "id": "ExpertReview",
+        "transitions": [
+            {
+                "on": "CONTINUE",
+                "target": "LabTesting"
+            },
+            {
+                "on": "ERROR",
+                "target": "failure"
+            }
+        ]
+    },
+    {
+        "id": "LabTesting",
+        "transitions": [
+            {
+                "on": "CONTINUE",
+                "target": "Evaluation"
+            },
+            {
+                "on": "ERROR",
+                "target": "failure"
+            }
+        ]
+    },
+    {
+        "id": "Evaluation",
+        "transitions": [
+            {
+                "on": "CONTINUE",
+                "target": "MarketResearch"
+            },
+            {
+                "on": "ERROR",
+                "target": "failure"
+            }
+        ]
+    },
+    {
+        "id": "MarketResearch",
+        "transitions": [
+            {
+                "on": "CONTINUE",
+                "target": "CreateMarketing"
+            },
+            {
+                "on": "ERROR",
+                "target": "failure"
+            }
+        ]
+    },
+    {
+        "id": "CreateMarketing",
+        "transitions": [
+            {
+                "on": "CONTINUE",
+                "target": "GenerateProductImage"
+            },
+            {
+                "on": "ERROR",
+                "target": "failure"
+            }
+        ]
+    },
+    {
+        "id": "GenerateProductImage",
+        "transitions": [
+            {
+                "on": "CONTINUE",
+                "target": "success"
+            },
+            {
+                "on": "ERROR",
+                "target": "failure"
+            }
+        ]
+    },
+    {
+        "id": "success",
+        "type": "final"
+    },
+    {
+        "id": "failure",
+        "type": "final"
+    }
+]

@@ -33,6 +33,7 @@ export async function chatCompletion(params: ChatCompletionCreateParamsBase) {
   const completion = await openai.chat.completions.create({
     messages: params.messages,
     model: params.model,
+    response_format: params.response_format || { type: 'text' },
   });
   return completion.choices[0].message.content;
 }

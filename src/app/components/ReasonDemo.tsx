@@ -52,6 +52,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
     // TODO Add a conditional attribute and refactor the programmer to use it for conditions on transitions
     // This will allow for both standard algorithms and LLMs to determine if a state should transition
     // make sure to update the prompts/training data to remove cond attributes
+    // transitions?: Map<"CONTINUE" | "ERROR", (context: Context, event: MachineEvent) => boolean>
     const sampleCatalog = useMemo(
         () =>
             new Map<string, Task>([

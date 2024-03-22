@@ -6,13 +6,14 @@ import {
     ReasoningEngine,
     Context,
     MachineEvent,
-    program as machineMacro,
+    programV2 as machineMacro,
     Task,
 } from ".";
 import { chatCompletion } from "@/app/api/openai";
 import { Thread } from "openai/resources/beta/index.mjs";
 import { programmer, solver } from "./prompts";
 import { MessageContentText } from "openai/resources/beta/threads/index.mjs";
+import { extractJsonFromBackticks } from "@/app/utils";
 
 async function solve(query: string, thread?: Thread): Promise<string> {
     // TODO remove the use of the threads API and go with completions
@@ -23,7 +24,7 @@ async function solve(query: string, thread?: Thread): Promise<string> {
             { role: 'system', content: system },
             { role: 'user', content: user },
         ],
-        model: "gpt-4"
+        model: "gpt-4-0125-preview"
     });
     const value = result;
     return value || '';
@@ -38,10 +39,11 @@ async function program(query: string, functionCatalog: string, thread?: Thread):
             { role: 'system', content: system },
             { role: 'user', content: user },
         ],
-        model: "gpt-4"
+        model: "gpt-4",
+        //response_format: { type: "json_object" }
     });
     const value = result || '';
-    const unwrapped = value.match(/```json\s+([\s\S]*?)\s+```/)?.[1] || value;
+    const unwrapped = extractJsonFromBackticks(value) || value;
     // TODO iterate over the states defined in JSON.parse(unwrapped) and see if a corresponding ID is found in the functionCatalog
     // if any of the id's are not found ask GPT to correct the errors passing the state machine and the functionCatalog
     // I'll need a new prompt for this
