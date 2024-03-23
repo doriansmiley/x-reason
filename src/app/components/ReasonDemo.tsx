@@ -14,6 +14,10 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
     const [componentToRender, setComponentToRender] = useState(() => (<div></div>));
     //const [callback, setCallback] = useState(() => (event: MachineEvent) => console.log("default callback called"))
     const callback = useRef((event: MachineEvent) => console.log("default callback called"));
+    const solutionBank = new Map<string, string>([
+        ['citrus shower gel', 'Would include the formula, marketing claims, and link to product image'],
+        ['peppermint shower gel', 'Would include the formula, marketing claims, and link to product image'],
+    ])
 
     const onSubmit = useCallback(async () => {
         setIsLoading(true);
@@ -66,6 +70,19 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                         implementation: (context: Context, event: MachineEvent) => {
                             console.log('RecallSolutions implementation called');
                         },
+                        transitions: new Map<"CONTINUE" | "ERROR", (context: Context, event: MachineEvent) => boolean>([
+                            [
+                                "CONTINUE",
+                                // this is an example of a function that is invoked as part of evaluating transitions
+                                // it can do whatever you like and take into account the current state of the world found on the context
+                                // The results of the implementation function should be include included in the payload of the incoming event
+                                // in this case payload.RecallSolutions which is passed via our UI's onNext function
+                                (context: Context, event: MachineEvent) => {
+                                    // TODO demonstrate a memory lookup using a JSON array of steps and an LLM
+                                    return true;
+                                }
+                            ]
+                        ]),
                     },
                 ],
                 [
@@ -101,6 +118,16 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                                 });
                             }, 5000);
                         },
+                        transitions: new Map<"CONTINUE" | "ERROR", (context: Context, event: MachineEvent) => boolean>([
+                            [
+                                "CONTINUE",
+                                // this is an example of a function that is invoked as part of evaluating transitions
+                                // it can do whatever you like and take into account the current state of the world found on the context
+                                // The results of the implementation function should be include included in the payload of the incoming event
+                                // in this case payload.IngredientDatabase
+                                (context: Context, event: MachineEvent) => true
+                            ]
+                        ]),
                     },
                 ],
                 [

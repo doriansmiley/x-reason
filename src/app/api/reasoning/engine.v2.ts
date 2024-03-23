@@ -14,6 +14,7 @@ import { Thread } from "openai/resources/beta/index.mjs";
 import { programmer, solver } from "./prompts";
 import { MessageContentText } from "openai/resources/beta/threads/index.mjs";
 import { extractJsonFromBackticks } from "@/app/utils";
+import { threadId } from "worker_threads";
 
 async function solve(query: string, thread?: Thread): Promise<string> {
     // TODO remove the use of the threads API and go with completions
@@ -31,23 +32,66 @@ async function solve(query: string, thread?: Thread): Promise<string> {
 }
 
 async function program(query: string, functionCatalog: string, thread?: Thread): Promise<StateConfig[]> {
-    // TODO remove the use of the threads API and go with completions
     const { user, system } = await programmer(query, functionCatalog);
-    // TODO consider creating a different assistant for the programmer, though it probably isn't useful without fine tuning
+
     const result = await chatCompletion({
         messages: [
             { role: 'system', content: system },
             { role: 'user', content: user },
         ],
-        model: "gpt-4",
-        //response_format: { type: "json_object" }
+        model: "gpt-4", // gpt-4-0125-preview, gpt-4
+        //response_format: { type: "json_object" } gpt-4-0125-preview
     });
     const value = result || '';
-    const unwrapped = extractJsonFromBackticks(value) || value;
-    // TODO iterate over the states defined in JSON.parse(unwrapped) and see if a corresponding ID is found in the functionCatalog
-    // if any of the id's are not found ask GPT to correct the errors passing the state machine and the functionCatalog
-    // I'll need a new prompt for this
-    // add a completion to check that the state ID's match the function catalog. Either the state matches or it is dropped
+    let unwrapped = extractJsonFromBackticks(value) || value;
+
+    // check the quality of the result
+    try {
+        JSON.parse(unwrapped)
+    } catch (e) {
+        const result = await chatCompletion({
+            messages: [
+                { role: 'system', content: system },
+                { role: 'user', content: user },
+                {
+                    role: 'user', content: `your generated solution:
+                ${unwrapped}
+                generated the following error:
+                ${(e as Error).message}
+                Ensure the JSON is valid and does not contain any trailing commas, correct quotes, etc
+                Only respond with the updated JSON! Your response will be sent to JSON.parse
+                ` },
+            ],
+            model: "gpt-4",
+            //response_format: { type: "json_object" }
+        });
+        const value = result || '';
+        unwrapped = extractJsonFromBackticks(value) || value;
+    }
+    const states: StateConfig[] = JSON.parse(unwrapped);
+
+    // make sure the state ID's are valid
+    const notFound = states.map((state) => {
+        if (state.type != 'parallel' &&
+            state.id !== 'success' &&
+            state.id !== 'failure' &&
+            functionCatalog.indexOf(state.id) < 0) {
+            return state;
+        }
+        return undefined;
+    })
+        .filter((item) => item !== undefined)
+        .map((item) => item?.id);
+    if (notFound.length > 0) {
+        // TODO, return a recursive call to program if max count has not been exceeded
+        throw new Error(`Unknown state ID encountered: ${notFound.join(',')}`)
+    }
+
+    const evaluationResult = await evaluate({ query, states, instructions: user })
+    if (evaluationResult.rating === 0) {
+        // TODO, return a recursive call to program if max count has not been exceeded
+        throw evaluationResult.error;
+    }
     return JSON.parse(unwrapped) as StateConfig[];
 }
 
