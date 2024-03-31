@@ -13,11 +13,13 @@ export type MachineEvent = {
   payload?: { [key: string]: any };
 } & EventObject;
 
+export type Transition = Map<"CONTINUE" | "ERROR", (context: Context, event: MachineEvent) => boolean>;
+
 export type Task = {
   description: string;
   implementation: (context: Context, event: MachineEvent) => void;
   component?: (context: Context, event: MachineEvent) => JSX.Element;
-  transitions?: Map<"CONTINUE" | "ERROR", (context: Context, event: MachineEvent) => boolean>
+  transitions?: Transition;
 };
 
 export interface StateMachineConfig {
@@ -36,9 +38,10 @@ export type Programer = {
 };
 
 export type EvaluationInput = {
-  query: string;
-  instructions: string;
+  query?: string;
+  instructions?: string;
   states: StateConfig[];
+  tools?: Map<string, Task>,
 };
 
 export type EvaluatorResult = { rating: number; error?: Error };

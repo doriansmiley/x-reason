@@ -6,7 +6,7 @@ import {
     ReasoningEngine,
     Context,
     MachineEvent,
-    programV2 as machineMacro,
+    programV2,
     Task,
 } from ".";
 import { chatCompletion } from "@/app/api/openai";
@@ -87,26 +87,12 @@ async function program(query: string, functionCatalog: string, thread?: Thread):
         throw new Error(`Unknown state ID encountered: ${notFound.join(',')}`)
     }
 
-    const evaluationResult = await evaluate({ query, states, instructions: user })
-    if (evaluationResult.rating === 0) {
-        // TODO, return a recursive call to program if max count has not been exceeded
-        throw evaluationResult.error;
-    }
     return JSON.parse(unwrapped) as StateConfig[];
 }
 
 async function evaluate(input: EvaluationInput): Promise<EvaluatorResult> {
     try {
-        const tools = new Map<string, Task>(
-            input.states.map((state) => [
-                state.id,
-                {
-                    description: state.id,
-                    implementation: (context: Context, event: MachineEvent) => console.log(event),
-                },
-            ]),
-        );
-        const machine = machineMacro(input.states, tools);
+        const machine = programV2(input.states, input.tools!);
 
         const withContext = machine.withContext({
             status: 0,

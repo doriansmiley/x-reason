@@ -1,18 +1,19 @@
 import { createMachine, sendTo, assign, StateNode, MachineConfig } from "xstate";
 import { v4 as uuidv4 } from "uuid";
 
-import { Context, MachineEvent, StateConfig, Task } from "./types"; // Import your types
+import { Context, MachineEvent, StateConfig, Task, Transition } from "./types"; // Import your types
 
-function getTransition(transition: { target: string; cond?: string; actions?: string }) {
+function getTransition(transition: { target: string; cond?: string; actions?: string }, task: Task, transitionEvent: 'CONTINUE' | 'ERROR') {
     let transitionConfig: any = {
         target: transition.target,
         actions: transition.actions || "saveResult",
     };
-    if (transition.cond) {
+    // if there is a transition function defined to this Task add a condition for the transition
+    if (task.transitions?.get(transitionEvent)) {
         transitionConfig.cond = (context: Context, event: MachineEvent) => {
             // TODO improve this by using a function supplied by the function catalog which can either be
             // a classical algorithm or a call to an LLM that returns true or false
-            return eval(transition.cond!);
+            return (task.transitions as Transition).get(transitionEvent)!(context, event);
         };
     }
     return transitionConfig;
@@ -25,27 +26,32 @@ function generateStateConfig(state: StateConfig, functionCatalog: Map<string, Ta
         };
     }
 
+    const retrievedFunction = functionCatalog.get(state.id);
+
+    if (!retrievedFunction) {
+        throw new Error(`function implementation for state: ${state.id} not found`);
+    }
+
     let stateConfig: any = {
-        assign: {
-            stack: (context: Context, event: MachineEvent) => [...context.stack!, state.id],
-        },
         entry: (context: Context, event: MachineEvent) => {
-            console.log("Received Event:", event);
-            const retrievedFunction = functionCatalog.get(state.id);
-            if (retrievedFunction) {
-                console.log("Executing Function:", state.id);
-                // if the function is async, we ignore the promise as this is fire and forget.
-                // it's up to the function to dispatch the CONTINUE event on the machine to capture results
-                // in the vent payload and continue execution
-                retrievedFunction.implementation(context, event);
+            console.log("Received Event:", event.type);
+            console.log("Executing Function:", state.id);
+            // ignore init events
+            if (event.type === 'xstate.init') {
+                return;
             }
+            context.stack?.push(state.id);
+            // if the function is async, we ignore the promise as this is fire and forget.
+            // it's up to the function to dispatch the CONTINUE event on the machine to capture results
+            // in the vent payload and continue execution
+            retrievedFunction.implementation(context, event);
         },
     };
     // TODO augment with retrievedFunction.transitions.
     if (state.transitions) {
         stateConfig.on = {
-            CONTINUE: state.transitions.filter((transition) => transition.on === "CONTINUE").map((transition) => getTransition(transition)),
-            ERROR: state.transitions.filter((transition) => transition.on === "ERROR").map((transition) => getTransition(transition)),
+            CONTINUE: state.transitions.filter((transition) => transition.on === "CONTINUE").map((transition) => getTransition(transition, retrievedFunction, 'CONTINUE')),
+            ERROR: state.transitions.filter((transition) => transition.on === "ERROR").map((transition) => getTransition(transition, retrievedFunction, 'ERROR')),
         };
     }
 
@@ -71,7 +77,35 @@ function generateStateConfig(state: StateConfig, functionCatalog: Map<string, Ta
 function generateStateMachineConfig(statesArray: StateConfig[], functionCatalog: Map<string, Task>) {
     let states: { [key: string]: Partial<StateNode<Context, any, MachineEvent>> } = {};
     statesArray.forEach((state) => {
-        states[state.id] = generateStateConfig(state, functionCatalog);
+        if (state.type === 'parallel') {
+            const parallelStates = state.states?.reduce((prev, parallelState) => {
+                const id = parallelState.id;
+                prev[parallelState.id] = generateStateConfig(parallelState, functionCatalog);
+                return prev;
+            }, {} as { [key: string]: any });
+            if (parallelStates !== undefined) {
+                if (!parallelStates?.success) {
+                    parallelStates['success'] = {
+                        type: 'final'
+                    }
+                }
+                if (!parallelStates?.failure) {
+                    parallelStates['failure'] = {
+                        type: 'final'
+                    }
+                }
+            }
+            states[state.id] = {
+                id: state.id,
+                type: state.type,
+                // @ts-ignore
+                onDone: state.onDone,
+                // @ts-ignore
+                states: parallelStates,
+            }
+        } else {
+            states[state.id] = generateStateConfig(state, functionCatalog);
+        }
     });
 
     return {

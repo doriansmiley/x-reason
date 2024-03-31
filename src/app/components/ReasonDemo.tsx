@@ -1,10 +1,10 @@
 "use client";
-import { ReactComponentElement, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, Elevation, TextArea, Intent, Spinner, SpinnerSize, Collapse, Pre } from "@blueprintjs/core";
 
-import { StateConfig, program, Context, MachineEvent, Task, engineV2 as engine } from "@/app/api/reasoning";
+import { StateConfig, Context, MachineEvent, Task, engineV2 as engine } from "@/app/api/reasoning";
 import { useMediator } from "@/app/utils";
-import Interpreter from "@/app/api/reasoning/Interpreter.v1.headed";
+import Interpreter from "@/app/api/reasoning/Interpreter.v2.headed";
 
 
 function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBoundaryRef: RefObject<any> }) {
@@ -74,7 +74,8 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                             [
                                 "CONTINUE",
                                 // this is an example of a function that is invoked as part of evaluating transitions
-                                // it can do whatever you like and take into account the current state of the world found on the context
+                                // it can do whatever you like and take into account the current state of the world 
+                                // found on the context. If can eben invoke an LLM for non deterministic workflows
                                 // The results of the implementation function should be include included in the payload of the incoming event
                                 // in this case payload.RecallSolutions which is passed via our UI's onNext function
                                 (context: Context, event: MachineEvent) => {
@@ -277,6 +278,10 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                 console.log('query is not defined, returning')
                 return;
             }
+            // prevent re-rendering
+            if (states.length > 0) {
+                return;
+            }
             console.log(`calling programmer`);
             const toolsCatalog = new Map<string, { description: string }>([
                 [
@@ -360,11 +365,16 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
             // generate the program
             const result = await engine.programmer.program(solution, JSON.stringify(Array.from(toolsCatalog.entries())));
             console.log(`programmer returned: ${result}`);
+            const evaluationResult = await engine.evaluator.evaluate({ states, tools: sampleCatalog })
+            if (evaluationResult.rating === 0) {
+                // TODO, return a recursive call to program if max count has not been exceeded
+                throw evaluationResult.error;
+            }
             setStates(result);
             setIsLoading(false);
         };
         macro();
-    }, [query, setStates, setIsLoading]);
+    }, [query, setStates, setIsLoading, states, sampleCatalog]);
 
     return {
         query,
