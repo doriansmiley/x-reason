@@ -1,5 +1,5 @@
 import { dispatchMediatedEvent } from "@/app/utils";
-import { programV2, MachineEvent, InterpreterInput, Context } from ".";
+import { programV2, MachineEvent, InterpreterInput, Context, StateConfig } from ".";
 import { StateMachine, interpret, Interpreter } from "xstate";
 import { ForwardedRef, MutableRefObject, useCallback, forwardRef, useEffect, useState } from "react";
 
@@ -10,6 +10,7 @@ const isMutableRefObject = (ref: any): ref is MutableRefObject<EventTarget | nul
 
 function useLogic(input: InterpreterInput & { target: ForwardedRef<EventTarget | null> }) {
     const { functions, states, target, context } = input;
+    const [currentStates, setCurrentStates] = useState<StateConfig[]>();
     const [interpreter, setInterpreter] = useState<Interpreter<Context, any, MachineEvent>>();
     const [event, setEvent] = useState<MachineEvent>();
     useEffect(() => {
@@ -17,14 +18,11 @@ function useLogic(input: InterpreterInput & { target: ForwardedRef<EventTarget |
             return;
         }
 
-        if (interpreter?.machine.states) {
-            const keys = Object.keys(interpreter.machine.states);
-            const ids = states.map(state => state.id);
-            const allKeysFound = keys.every(key => ids.includes(key));
-            if (allKeysFound) {
-                if (event) {
-                    interpreter?.send(event.type, { payload: event.payload });
-                }
+        if (interpreter?.initialized) {
+            if (event) {
+                interpreter.send(event.type, { payload: event.payload });
+            }
+            if (currentStates === states) {
                 // we've already generated this machine
                 return;
             }
@@ -52,7 +50,8 @@ function useLogic(input: InterpreterInput & { target: ForwardedRef<EventTarget |
         });
         //@ts-ignore
         setInterpreter(instance);
-    }, [context, functions, setInterpreter, states, target, interpreter, event]);
+        setCurrentStates(states);
+    }, [context, functions, setInterpreter, states, target, interpreter, event, currentStates]);
 
 
     const callback = useCallback((event: MachineEvent) => {

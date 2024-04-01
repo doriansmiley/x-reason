@@ -21,7 +21,9 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
 
     const onSubmit = useCallback(async () => {
         setIsLoading(true);
+        setStates([]);
         setQuery(ref.current?.textareaElement?.value || "");
+        setComponentToRender(<DefaultComponent message="I am exploring the knowledge base to find a solution to your query." />);
     }, [ref, setQuery, setIsLoading]);
 
     const onNext = useCallback(() => {
@@ -278,7 +280,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
                 console.log('query is not defined, returning')
                 return;
             }
-            // prevent re-rendering
+            // prevent re-rendering. Submit needs to set state to an empty array
             if (states.length > 0) {
                 return;
             }
