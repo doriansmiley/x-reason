@@ -6,14 +6,22 @@ import { StateConfig, Context, MachineEvent, Task, engineV2 as engine } from "@/
 import { useMediator } from "@/app/utils";
 import Interpreter from "@/app/api/reasoning/Interpreter.v2.headed";
 
+function DefaultComponent({ message }: { message: string }) {
+    return (
+        <div>
+            <Spinner aria-label="Loading..." intent={Intent.PRIMARY} size={SpinnerSize.STANDARD} />
+            <p>{message}</p>
+        </div>
+    );
+}
 
 function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBoundaryRef: RefObject<any> }) {
     const [query, setQuery] = useState<string>();
     const [states, setStates] = useState<StateConfig[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [componentToRender, setComponentToRender] = useState(() => (<div></div>));
-    //const [callback, setCallback] = useState(() => (event: MachineEvent) => console.log("default callback called"))
-    const callback = useRef((event: MachineEvent) => console.log("default callback called"));
+    const [callback, setCallback] = useState(() => (event: MachineEvent) => console.log("default callback called"))
+    //const callback = useRef((event: MachineEvent) => console.log("default callback called"));
     const solutionBank = new Map<string, string>([
         ['citrus shower gel', 'Would include the formula, marketing claims, and link to product image'],
         ['peppermint shower gel', 'Would include the formula, marketing claims, and link to product image'],
@@ -24,10 +32,11 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
         setStates([]);
         setQuery(ref.current?.textareaElement?.value || "");
         setComponentToRender(<DefaultComponent message="I am exploring the knowledge base to find a solution to your query." />);
+        setCallback((event: MachineEvent) => console.log("default callback called"));
     }, [ref, setQuery, setIsLoading]);
 
     const onNext = useCallback(() => {
-        callback.current({ type: "CONTINUE", payload: { RecallSolutions: false } });
+        callback({ type: "CONTINUE", payload: { RecallSolutions: false } });
     }, [callback]);
 
     const SampleComponent = useMemo(() => (<div>
@@ -44,15 +53,6 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
         <p>TODO add logs</p>
     </div>)
         , []);
-
-    function DefaultComponent({ message }: { message: string }) {
-        return (
-            <div>
-                <Spinner aria-label="Loading..." intent={Intent.PRIMARY} size={SpinnerSize.STANDARD} />
-                <p>{message}</p>
-            </div>
-        );
-    }
 
     // TODO figure out how to manage the available functions,I think these should be exposed via DI
     // TODO Add a conditional attribute and refactor the programmer to use it for conditions on transitions
@@ -257,19 +257,19 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
         [callback, SampleComponent],
     );
 
-    const mediator = (event: { type: string; payload: Record<string, any> }) => {
+    const mediator = useCallback((event: { type: string; payload: Record<string, any> }) => {
         if (event?.payload?.callback) {
-            if (event.payload.callback !== callback.current) {
-                callback.current = event.payload.callback;
-            }
+            setCallback(event.payload.callback)
         }
+        console.log(`mediator state: ${event?.payload?.state}`);
         const component = sampleCatalog.get(event?.payload?.state)?.component;
+        console.log(`mediator component: ${component}`);
         if (component) {
             setComponentToRender(component(event?.payload?.context, event));
         } else if (event?.payload?.state === 'success') {
             setComponentToRender(SuccessComponent);
         }
-    };
+    }, [sampleCatalog, SuccessComponent]);
 
     useMediator<["TRANSITION", Record<string, any>]>("TRANSITION", mediator, eventBoundaryRef);
 
@@ -376,7 +376,7 @@ function useLogic({ ref, eventBoundaryRef }: { ref: RefObject<TextArea>; eventBo
             setIsLoading(false);
         };
         macro();
-    }, [query, setStates, setIsLoading, states, sampleCatalog]);
+    }, [query, states, sampleCatalog]);
 
     return {
         query,

@@ -18,39 +18,40 @@ function useLogic(input: InterpreterInput & { target: ForwardedRef<EventTarget |
             return;
         }
 
-        if (interpreter?.initialized) {
+        if (interpreter?.initialized && !interpreter?.getSnapshot().done) {
             if (event) {
                 interpreter.send(event.type, { payload: event.payload });
             }
-            if (currentStates === states) {
-                // we've already generated this machine
-                return;
-            }
+        } else if (currentStates !== states) {
+            const result: StateMachine<Context, any, MachineEvent> = programV2(states, functions);
+            const initialContext = context || {
+                status: 0,
+                requestId: "test",
+                stack: [],
+            };
+            const machine = result.withContext(initialContext);
+
+            const instance = interpret(machine).onTransition((state) => {
+                if (isMutableRefObject(target) && target.current) {
+                    console.log(`onTransition called: machine: ${machine.id} state: ${state.value} dispatching TRANSITION target ${target.current}`);
+                    dispatchMediatedEvent(target.current, [
+                        "TRANSITION",
+                        {
+                            state: state.value,
+                            context: state.context,
+                        },
+                    ]);
+                }
+                if (state.done) {
+                    console.log("Final state reached, stopping the interpreter.");
+                    instance.stop(); // Stop the interpreter when the final state is reached
+                }
+            });
+            //@ts-ignore
+            setInterpreter(instance);
+            setCurrentStates(states);
         }
 
-        const result: StateMachine<Context, any, MachineEvent> = programV2(states, functions);
-        const initialContext = context || {
-            status: 0,
-            requestId: "test",
-            stack: [],
-        };
-        const machine = result.withContext(initialContext);
-
-        const instance = interpret(machine).onTransition((state) => {
-            if (isMutableRefObject(target) && target.current) {
-                console.log(`onTransition called: state: ${state.value} dispatching TRANSITION target ${target.current}`);
-                dispatchMediatedEvent(target.current, [
-                    "TRANSITION",
-                    {
-                        state: state.value,
-                        context: state.context,
-                    },
-                ]);
-            }
-        });
-        //@ts-ignore
-        setInterpreter(instance);
-        setCurrentStates(states);
     }, [context, functions, setInterpreter, states, target, interpreter, event, currentStates]);
 
 

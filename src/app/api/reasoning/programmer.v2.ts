@@ -35,7 +35,6 @@ function generateStateConfig(state: StateConfig, functionCatalog: Map<string, Ta
     let stateConfig: any = {
         entry: (context: Context, event: MachineEvent) => {
             console.log("Received Event:", event.type);
-            console.log("Executing Function:", state.id);
             // ignore init events
             if (event.type === 'xstate.init') {
                 return;
@@ -44,6 +43,7 @@ function generateStateConfig(state: StateConfig, functionCatalog: Map<string, Ta
             // if the function is async, we ignore the promise as this is fire and forget.
             // it's up to the function to dispatch the CONTINUE event on the machine to capture results
             // in the vent payload and continue execution
+            console.log("Executing Function:", state.id);
             retrievedFunction.implementation(context, event);
         },
     };
