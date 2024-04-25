@@ -1,18 +1,23 @@
-import { dispatchMediatedEvent } from "@/app/utils";
-import { programV2, MachineEvent, InterpreterInput, Context, StateConfig } from ".";
+"use client";
+
 import { StateMachine, interpret, Interpreter } from "xstate";
-import { ForwardedRef, MutableRefObject, useCallback, forwardRef, useEffect, useState } from "react";
+import { MutableRefObject, useCallback, useEffect, useState } from "react";
+
+import { useReasonDemoDispatch, ReasonDemoActionTypes } from "@/app/context/ReasoningDemoContext";
+import { programV2, MachineEvent, InterpreterInput, Context, StateConfig } from ".";
 
 // Type guard to check if target is a MutableRefObject
 const isMutableRefObject = (ref: any): ref is MutableRefObject<EventTarget | null> => {
     return 'current' in ref;
 };
 
-function useLogic(input: InterpreterInput & { target: ForwardedRef<EventTarget | null> }) {
-    const { functions, states, target, context } = input;
+function useLogic(input: InterpreterInput) {
+    const { functions, states, context } = input;
     const [currentStates, setCurrentStates] = useState<StateConfig[]>();
     const [interpreter, setInterpreter] = useState<Interpreter<Context, any, MachineEvent>>();
     const [event, setEvent] = useState<MachineEvent>();
+    const dispatch = useReasonDemoDispatch();
+
     useEffect(() => {
         if (states.length === 0) {
             return;
@@ -32,27 +37,26 @@ function useLogic(input: InterpreterInput & { target: ForwardedRef<EventTarget |
             const machine = result.withContext(initialContext);
 
             const instance = interpret(machine).onTransition((state) => {
-                if (isMutableRefObject(target) && target.current) {
-                    console.log(`onTransition called: machine: ${machine.id} state: ${state.value} dispatching TRANSITION target ${target.current}`);
-                    dispatchMediatedEvent(target.current, [
-                        "TRANSITION",
-                        {
-                            state: state.value,
-                            context: state.context,
-                        },
-                    ]);
-                }
+                console.log(`onTransition called: machine: ${machine.id} state: ${state.value}`);
+                dispatch({
+                    type: ReasonDemoActionTypes.SET_STATE,
+                    value: {
+                        currentState: state.value,
+                        context: state.context,
+                    }
+                });
                 if (state.done) {
                     console.log("Final state reached, stopping the interpreter.");
                     instance.stop(); // Stop the interpreter when the final state is reached
                 }
             });
+
             //@ts-ignore
             setInterpreter(instance);
             setCurrentStates(states);
         }
 
-    }, [context, functions, setInterpreter, states, target, interpreter, event, currentStates]);
+    }, [context, functions, setInterpreter, states, interpreter, event, currentStates, dispatch]);
 
 
     const callback = useCallback((event: MachineEvent) => {
@@ -72,27 +76,24 @@ function useLogic(input: InterpreterInput & { target: ForwardedRef<EventTarget |
     return { callback, interpreter };
 }
 // Using forwardRef to wrap your component allows you to receive a ref from a parent component
-const InterpreterRef = forwardRef(({ functions, states, children }: InterpreterInput & { children: React.ReactNode }, ref: ForwardedRef<EventTarget>) => {
-    const { callback, interpreter } = useLogic({ functions, states, target: ref });
+const InterpreterV2 = ({ functions, states, children }: InterpreterInput & { children: React.ReactNode }) => {
+    const { callback, interpreter } = useLogic({ functions, states });
+    const dispatch = useReasonDemoDispatch();
 
-    if (isMutableRefObject(ref) && ref.current && interpreter) {
-        dispatchMediatedEvent(ref.current, [
-            "TRANSITION",
-            {
-                state: 'default',
-                context: interpreter?.machine.context,
+    useEffect(() => {
+        dispatch({
+            type: ReasonDemoActionTypes.SET_STATE,
+            value: {
                 callback,
-            },
-        ]);
-        if (!interpreter.initialized) {
-            interpreter.start();
+            }
+        });
+        if (!interpreter?.initialized) {
+            interpreter?.start();
         }
-    }
+    }, [dispatch, callback, interpreter]);
+
     // @ts-ignore
-    return <div ref={ref}>{children}</div>;
-});
+    return <div>{children}</div>;
+};
 
-// Set displayName for the component for better debugging
-InterpreterRef.displayName = 'Interpreter';
-
-export default InterpreterRef;
+export default InterpreterV2;

@@ -1,20 +1,18 @@
 import { interpret } from "xstate";
+import { chatCompletion } from "@/app/api/openai";
+import { Thread } from "openai/resources/beta/index.mjs";
+
 import {
     StateConfig,
     EvaluationInput,
     EvaluatorResult,
     ReasoningEngine,
-    Context,
-    MachineEvent,
     programV2,
-    Task,
 } from ".";
-import { chatCompletion } from "@/app/api/openai";
-import { Thread } from "openai/resources/beta/index.mjs";
+
 import { programmer, solver } from "./prompts";
-import { MessageContentText } from "openai/resources/beta/threads/index.mjs";
 import { extractJsonFromBackticks } from "@/app/utils";
-import { threadId } from "worker_threads";
+
 
 async function solve(query: string, thread?: Thread): Promise<string> {
     // TODO remove the use of the threads API and go with completions

@@ -17,8 +17,8 @@ export type Transition = Map<"CONTINUE" | "ERROR", (context: Context, event: Mac
 
 export type Task = {
   description: string;
-  implementation: (context: Context, event: MachineEvent) => void;
-  component?: (context: Context, event: MachineEvent) => JSX.Element;
+  implementation: (context: Context, event?: MachineEvent) => void;
+  component?: (context: Context, event?: MachineEvent) => JSX.Element;
   transitions?: Transition;
 };
 
