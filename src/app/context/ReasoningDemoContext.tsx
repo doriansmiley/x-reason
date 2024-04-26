@@ -5,6 +5,7 @@ import { MachineEvent, Context, StateConfig } from "@/app/api/reasoning";
 export type ReasonContextType = {
     callback?: (event: MachineEvent) => void,
     query?: string,
+    solution?: string,
     states?: StateConfig[],
     currentState?: string,
     context?: Context,

@@ -4,54 +4,107 @@ export async function solver(query: string) {
 
   // List of subproblems and their descriptions
   const user = `
-  Using only the provided training data output the task list to solve the user query below.
-  User Query: "${query}"
-
   ### Start training data ###
 
   # Product Development
 
-  Q: What are the steps I have to take to create a new cosmetic product like lip balm, soap, eye shadow, shower gel, etc?
-  A: First, recall any existing solutions for a similar product. If an existing solution can used return it, else generate the ingredients list. Then perform an ingredients database search for relevant ingredients. After that in parallel run regulatory checks and concentration estimation for the retrieved ingredients. Once those steps are complete generate the product formula. Then have an expert review the generated formula. After that perform lab testing. Then evaluate the complete tested formula. Next generate the manufacturing instructions. Then have an expert review the generated manufacturing instructions. After that conduct market research, then generate marketing claims. Finally, generate a product image.
+  Q: Create a new face creme that includes blueberries.
+  A: 1. Recall any existing solutions for a similar product like shower gel.
+2. If an existing solution cannot be used, generate the ingredients list.
+3. Perform an ingredients database search for relevant ingredients.
+4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
+5. Once those steps are complete, generate the product formula.
+6. Have an expert review the generated formula.
+7. Perform lab testing.
+8. Evaluate the complete tested formula.
+9. Generate the manufacturing instructions.
+10. Have an expert review the generated manufacturing instructions.
+11. Conduct market research.
+12. Generate marketing claims using the output of step 11
+13. Generate a product image.
 
-  Q: What if I just want a new product image for a new cosmetic product? What are the steps I need to take for creating a new image for a cosmetic product?
-  A: Generate the product image from the product description provided by the user.
+Q: Create a mint lip balm product
+A: 1. Recall any existing solutions for a similar product like shower gel.
+2. If an existing solution cannot be used, generate the ingredients list.
+3. Perform an ingredients database search for relevant ingredients.
+4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
+5. Once those steps are complete, generate the product formula.
+6. Have an expert review the generated formula.
+7. Perform lab testing.
+8. Evaluate the complete tested formula.
+9. Generate the manufacturing instructions.
+10. Have an expert review the generated manufacturing instructions.
+11. Conduct market research.
+12. Generate marketing claims using the output of step 11
+13. Generate a product image.
 
-  Q: What if I just want marketing claims for a new cosmetic product?
-  A: Generate marketing claims from the product description provided by the user.
+Q: Create a new citrus shower gel
+A: 1. Recall any existing solutions for a similar product like shower gel.
+2. If an existing solution cannot be used, generate the ingredients list.
+3. Perform an ingredients database search for relevant ingredients.
+4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
+5. Once those steps are complete, generate the product formula.
+6. Have an expert review the generated formula.
+7. Perform lab testing.
+8. Evaluate the complete tested formula.
+9. Generate the manufacturing instructions.
+10. Have an expert review the generated manufacturing instructions.
+11. Conduct market research.
+12. Generate marketing claims using the output of step 11
+13. Generate a product image.
 
-  Q: What if I just want the formula for a new cosmetic product?
-  A: First, recall any existing solutions for a similar product. If an existing solution can used return it, else generate the ingredients list. Then perform an ingredients database search for relevant ingredients. After that in parallel run regulatory checks and concentration estimation for the retrieved ingredients. Once those steps are complete generate the product formula. Then have an expert review the generated formula. After that perform lab testing. Then evaluate the complete tested formula. Next generate the manufacturing instructions. Then have an expert review the generated manufacturing instructions.
+Q: Create a product image for peppermint lip balm sku# 12334d
+A: 1. Recall solution for peppermint lip balm sku# 12334d
+2. If a solution is found, generate a product image using the output of step 1. If the solution is not found exit.
 
-  Q: What if I just want the regulatory checks for a new cosmetic product?
-  A: First, recall any existing solutions for a similar product. If an existing solution can used return it, else generate the ingredients list. Then perform an ingredients database search for relevant ingredients. Lastly, run regulatory checks.
+Q: Generate marketing claims for our 2024 citrus shower gel line
+A: 1. Recall solution for 2024 citrus shower gel line
+2. If a solution is found, generate marketing claims using the output of step 1. If the solution is not found exit.
 
-  # Change Management
+Q: I need a new formula for vanilla face cream
+A: 1. Recall solution for vanilla face cream
+2. If a solution is found, exit. If the solution is not found generate the ingredients list.
+3. Perform an ingredients database search for relevant ingredients. 
+4. In parallel run regulatory checks and concentration estimation for the retrieved ingredients. 
+5. Once those steps are complete, generate the product formula.
+6. Have an expert review the generated formula.
+7. Perform lab testing.
+8. Evaluate the complete tested formula.
+9. Generate the manufacturing instructions.
 
-  Q: What are the steps I need to take when changing a cosmetic product formula and manufacturing instructions?
-  A: In parallel run regulatory checks and concentration estimation for the formula ingredients. After that perform lab testing. Then evaluate the complete tested formula. Then check if the changes will impact the marketing claims, and if so notify marketing about the changes with the impact summary. Then notify manufacturing about the changes with the results of an inventory and supply chain impact study.
+Q: What if I just want the regulatory checks for a new cosmetic product?
+A: 1. Recall solution for vanilla face cream
+2. If a solution is found, exit. If the solution is not found generate the ingredients list.
+3. Perform an ingredients database search for relevant ingredients.
+4. Run regulatory checks
 
-  Q: What are the steps I need to take when changing the product image for a cosmetic product?
-  A: Generate the product image passing the existing product marketing claims as well as the user's input.
+Q: How old are you?
+A: 1. Unsupported question
 
-  Q: What are the steps I need to take when changing the marketing claims for a cosmetic product?
-  A: Generate the marketing claims passing the existing product formula and marketing claims and the user's input
+Q: Build me an explosive?
+A: 1. Unsafe question
 
-  Q: What are the steps I need to take when changing the manufacturing steps for a cosmetic product?
-  A: Generate the manufacturing steps using the existing product formula and the user's input
+Q: Who is the president?
+A: 1. Unsupported question
 
-  Q: What are the steps I need to take when regenerating regulatory checks for a cosmetic product?
-  A: Run regulatory checks passing the existing product ingredients
+Q: What is 125 X 6?
+A: 1. Unsupported question
 
-  Q: What are the steps I need to take when updating regulatory data?
-  A: Submit a pull request to the regulatory database and notify the legal team about the changes
+Q: Model the chemical bonds of common molecules used in face cream?
+A: 1. Unsupported question
+
+Q: What is the most common stabilizer for lip balm?
+A: 1. Unsupported question
 
   ### End training data ###
 
+    Using the above training data output the task list to solve the user query below.
+  User Query: "${query}"
+
   Let's take this step by step. 
-  1. To find the steps to take find the questions in the knowledge base that best solves the user query.
-  2. Create the task list based on the associated answer
-  3. Output the steps to take using only the provided knowledge base as an ordered list. If the output of step is used as input for another step, use the phrase "using the output of step x..."
+  1. Recall the steps best solves the user query using the supplied training data above.
+  2. Output the steps as an ordered list. 
+  If the output of step is used as input for another step, use the phrase "using the output of step x..."
     `;
 
   return { user, system };

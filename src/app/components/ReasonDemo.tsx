@@ -17,7 +17,7 @@ function DefaultComponent({ message }: { message: string }) {
 }
 
 function useLogic({ ref }: { ref: RefObject<TextArea> }) {
-    const { states, currentState, callback, context } = useReasonDemoStore();
+    const { states, currentState, callback, context, solution } = useReasonDemoStore();
     const dispatch = useReasonDemoDispatch();
     const [query, setQuery] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
@@ -44,10 +44,6 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
     </div>)
         , []);
     // TODO figure out how to manage the available functions,I think these should be exposed via DI
-    // TODO Add a conditional attribute and refactor the programmer to use it for conditions on transitions
-    // This will allow for both standard algorithms and LLMs to determine if a state should transition
-    // make sure to update the prompts/training data to remove cond attributes
-    // transitions?: Map<"CONTINUE" | "ERROR", (context: Context, event: MachineEvent) => boolean>
     const sampleCatalog = useMemo(
         () =>
             new Map<string, Task>([
@@ -359,9 +355,9 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                 },
             ],
         ]);
-        const solution = await engine.solver.solve(userQuery!);
+        const solverSolution = await engine.solver.solve(userQuery!);
         // generate the program
-        const result = await engine.programmer.program(solution, JSON.stringify(Array.from(toolsCatalog.entries())));
+        const result = await engine.programmer.program(solverSolution, JSON.stringify(Array.from(toolsCatalog.entries())));
         console.log(`programmer returned: ${result}`);
         const evaluationResult = await engine.evaluator.evaluate({ states: result, tools: sampleCatalog })
         if (evaluationResult.rating === 0) {
@@ -372,6 +368,7 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
             type: ReasonDemoActionTypes.SET_STATE,
             value: {
                 states: result,
+                solution: solverSolution,
             }
         });
         setIsLoading(false);
