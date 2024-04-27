@@ -219,6 +219,21 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                     },
                 ],
                 [
+                    "ManufacturingInstructions",
+                    {
+                        description:
+                            "Generate the manufacturing steps for a tested and evaluated formula",
+                        implementation: (context: Context, event?: MachineEvent) => {
+                            setTimeout(() => {
+                                // TODO all real implementation
+                                if (callback) {
+                                    callback({ type: "CONTINUE", payload: { ManufacturingInstructions: "The steps are..." } });
+                                }
+                            }, 1);
+                        },
+                    },
+                ],
+                [
                     "MarketResearch",
                     {
                         description: "Performs market research for the new product",
@@ -282,7 +297,7 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                 "RecallSolutions",
                 {
                     description:
-                        "Recalls a smilar solution to the user query. If a solution is found it will set the existingSolutionFound attribute of the event params to true: `event.payload?.params.existingSolutionFound`",
+                        "Recalls a similar solution to the user query. If a solution is found it will set the existingSolutionFound attribute of the event params to true: `event.payload?.params.existingSolutionFound`",
                 },
             ],
             [
@@ -331,6 +346,12 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                 },
             ],
             [
+                "ManufacturingInstructions",
+                {
+                    description: "Generate the manufacturing steps for a tested and evaluated formula",
+                },
+            ],
+            [
                 "Evaluation",
                 {
                     description: "Evaluates a generated product formula and rates the result",
@@ -355,6 +376,7 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                 },
             ],
         ]);
+
         const solverSolution = await engine.solver.solve(userQuery!);
         // generate the program
         const result = await engine.programmer.program(solverSolution, JSON.stringify(Array.from(toolsCatalog.entries())));
