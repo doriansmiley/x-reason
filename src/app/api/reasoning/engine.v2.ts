@@ -23,7 +23,7 @@ async function solve(query: string, thread?: Thread): Promise<string> {
             { role: 'system', content: system },
             { role: 'user', content: user },
         ],
-        model: "gpt-4-0125-preview"
+        model: "gpt-4-0125-preview" // gpt-4-0125-preview, gpt-4
     });
     const value = result;
     return value || '';

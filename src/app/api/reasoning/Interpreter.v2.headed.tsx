@@ -87,8 +87,8 @@ const InterpreterV2 = ({ functions, states, children }: InterpreterInput & { chi
                 callback,
             }
         });
-        if (!interpreter?.initialized) {
-            interpreter?.start();
+        if (interpreter && !interpreter.initialized) {
+            interpreter.start();
         }
     }, [dispatch, callback, interpreter]);
 

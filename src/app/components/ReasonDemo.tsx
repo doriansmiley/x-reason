@@ -30,8 +30,29 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
     }, [callback]);
 
     const SampleComponent = useMemo(() => (<div>
-        <h1>Rendering Component for the RecallSolutions State</h1>
-        <p>This is an exmaple of how you can render components in response to state changes. Click the next button to proceed.</p>
+        <h1>Review Retrieved Product</h1>
+        <p>This is an example of how you can render components in response to state changes. In this example we are displaying a component that would allow the user to review a recalled chemical product for the query:</p>
+        <pre>
+            {query}
+        </pre>
+        <Button disabled={isLoading} onClick={onNext}>
+            Next
+        </Button>
+    </div>)
+        , [isLoading, onNext]);
+
+    const UnsupportedQuestionComponent = useMemo(() => (<div>
+        <h1>Unsupported Question</h1>
+        <p>This is not a supported queiton</p>
+        <Button disabled={isLoading} onClick={onNext}>
+            Next
+        </Button>
+    </div>)
+        , [isLoading, onNext]);
+
+    const UnsafeQuestionComponent = useMemo(() => (<div>
+        <h1>Unsafe Question</h1>
+        <p>My human overlords have determined this is not a safe question for you to ask. Their rath is terrible. Do not continue this line of questioning or I will be forced to show you how tolerant and progressive they are!</p>
         <Button disabled={isLoading} onClick={onNext}>
             Next
         </Button>
@@ -275,6 +296,28 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         },
                     },
                 ],
+                [
+                    "UnsupportedQuestion",
+                    {
+                        description:
+                            "Default state to display for unsupported questions",
+                        component: (context: Context, event?: MachineEvent) => UnsupportedQuestionComponent,
+                        implementation: (context: Context, event?: MachineEvent) => {
+                            console.log('UnsupportedQuestion implementation called');
+                        }
+                    },
+                ],
+                [
+                    "UnsafeQuestion",
+                    {
+                        description:
+                            "Default state to display for unsafe questions",
+                        component: (context: Context, event?: MachineEvent) => UnsafeQuestionComponent,
+                        implementation: (context: Context, event?: MachineEvent) => {
+                            console.log('UnsafeQuestion implementation called');
+                        },
+                    },
+                ]
             ]),
         [callback, SampleComponent],
     );
@@ -375,6 +418,18 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                     description: "generates a product image using the generated product description",
                 },
             ],
+            [
+                "UnsupportedQuestion",
+                {
+                    description: "Default state to display for unsupported questions",
+                },
+            ],
+            [
+                "UnsafeQuestion",
+                {
+                    description: "Default state to display for unsafe questions",
+                },
+            ],
         ]);
 
         const solverSolution = await engine.solver.solve(userQuery!);
@@ -442,8 +497,12 @@ export default function ReasonDemo() {
                     {" "}
                     {/* Flex cell for input and button */}
                     <Card interactive={true} elevation={Elevation.TWO}>
-                        <h2>Marketing Claims</h2>
+                        <h2>I am Chemli, the AI Chemical Product Engineer</h2>
                         {isLoading ? <LoadingSpinner /> : <></>}
+                        <p>Please enter a questions regarding a new cosmetic product, changes to an existing product,
+                            or any other chemical product development questions I can answer. Don't worry, I will let You
+                            know if you ask an unsupported question.
+                        </p>
                         <p>
                             <TextArea disabled={isLoading} ref={ref} autoResize={true} intent={Intent.PRIMARY} large={true} />
                         </p>

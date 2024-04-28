@@ -157,6 +157,44 @@ export async function programmer(query: string, functionCatalog: string) {
   ${query}
   ### End User Query ###
   ### Start training data ###
+  Q: 1. Unsupported question
+  A: [
+  {
+    "id": "UnsupportedQuestion",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+
+Q: 1. Unsafe question
+A: [
+  {
+    "id": "UnsafeQuestion",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+
   Q: 1. Recall solution for vanilla face cream
   2. If a solution is not found, exit. If a solution is found run regulatory checks
   A: [
