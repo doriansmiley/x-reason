@@ -52,10 +52,18 @@ export type Evaluator = {
   evaluate(input: EvaluationInput): Promise<EvaluatorResult>;
 };
 
+export type AiTransition = {
+  // takes the task list returned by the solver, the id of the current state, 
+  // and the value returned by the state's implementation function
+  // returns true or false
+  transition(taskList: string, currentState: string, stateValue: string): Promise<boolean>;
+};
+
 export type ReasoningEngine = {
   solver: Solver;
   programmer: Programer;
   evaluator: Evaluator;
+  logic: AiTransition;
 };
 
 export interface ICallable {

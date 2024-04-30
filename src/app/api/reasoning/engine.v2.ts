@@ -10,7 +10,7 @@ import {
     programV2,
 } from ".";
 
-import { programmer, solver } from "./prompts";
+import { aiTransition, programmer, solver } from "./prompts";
 import { extractJsonFromBackticks } from "@/app/utils";
 
 
@@ -111,10 +111,49 @@ async function evaluate(input: EvaluationInput): Promise<EvaluatorResult> {
     };
 }
 
+async function transition(taskList: string, currentState: string, stateValue: string): Promise<boolean> {
+    const { user, system } = await aiTransition(taskList, currentState, stateValue);
+
+    const result = await chatCompletion({
+        messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: user },
+        ],
+        model: "gpt-4-0125-preview", // gpt-4-0125-preview, gpt-4
+        //response_format: { type: "json_object" } gpt-4-0125-preview
+    });
+    let value = result;
+    console.log(`engine.v2.ts.transition result is: ${value}`);
+    // TODO improve retry mechanism
+    if (value !== 'true' && value !== 'false') {
+        const result = await chatCompletion({
+            messages: [
+                { role: 'system', content: system },
+                { role: 'user', content: user },
+                {
+                    role: 'user', content: `your generated solution:
+                ${value}
+                does not conform to the required output format!
+                You must respond with either "true" or "false"!
+                Do not be chatty!
+                ` },
+            ],
+            model: "gpt-4",
+        });
+        value = result;
+        if (value !== 'true' && value !== 'false') {
+            throw new Error(`Invalid model response: ${value}`);
+        }
+    }
+
+    return value === 'true';
+}
+
 const implementation: ReasoningEngine = {
     solver: { solve },
     programmer: { program },
     evaluator: { evaluate },
+    logic: { transition }
 };
 
 export default implementation;

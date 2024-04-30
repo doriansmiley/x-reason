@@ -714,3 +714,62 @@ Only responds in JSON using the Chemli DSL.
 
   return { user, system };
 }
+
+export async function aiTransition(taskList: string, currentState: string, stateValue: string) {
+  const system = `
+  You are an AI based reasoning engine called Transit. Transit determines if state machine transitions should take place.
+  Transit only returns true or false and is never chatty.
+  Transit only considered the information provided by the user to determine if it should return true or false.
+  `;
+
+  const user = `
+  ### Start training data ###
+  Q:Based on the following task list:
+  1. Recall solution for sku #1234 face cream.
+  2. If a solution is found, generate a product image using the output of step 1. If the solution is not found, exit.
+
+  The current state of the application is:
+  Recalled Solution
+  The result of that state is:
+  {"RecallSolutions":"No solution found"}
+
+  Return true (the stat's condition for transition has been met) or false (the state's condition for transition has not been me)
+
+  You can only response with true or false
+  A: false
+
+  Q:Based on the following task list:
+  1. Recall solution for sku #1234 face cream.
+  2. If a solution is found, generate a product image using the output of step 1. If the solution is not found, exit.
+
+  The current state of the application is:
+  Recalled Solution
+  The result of that state is:
+  {"RecallSolutions":{"phases": 
+  {"A": [...phases], "B": [...]}
+  "Manufacturing Procedure": "1. Mix phase (A) and (B)"...,
+  ...more solution attributes
+}}
+
+  Return true (the stat's condition for transition has been met) or false (the state's condition for transition has not been me)
+
+  You can only response with true or false
+  A: true
+
+  ### End training data ###
+
+  Based on the following task list:
+  ${taskList}
+
+ The current state of the application is:
+  ${currentState}
+  The result of that state is:
+  ${stateValue}
+
+  Return true (the state's condition for transition has been met) or false (the state's condition for transition has not been me)
+
+  You can only response with true or false
+  `;
+
+  return { system, user };
+}
