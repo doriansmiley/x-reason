@@ -6,15 +6,7 @@ import { Button, Card, Elevation, TextArea, Intent, Spinner, SpinnerSize } from 
 import { Context, MachineEvent, Task, engineV2 as engine } from "@/app/api/reasoning";
 import Interpreter from "@/app/api/reasoning/Interpreter.v2.headed";
 import { ReasonDemoActionTypes, useReasonDemoStore, useReasonDemoDispatch } from "@/app/context/ReasoningDemoContext";
-
-function DefaultComponent({ message }: { message: string }) {
-    return (
-        <div>
-            <Spinner aria-label="Loading..." intent={Intent.PRIMARY} size={SpinnerSize.STANDARD} />
-            <p>{message}</p>
-        </div>
-    );
-}
+import { Success, RecallSolution, UnsafeQuestion, UnsupportedQuestion, DefaultComponent } from "./chemli";
 
 function useLogic({ ref }: { ref: RefObject<TextArea> }) {
     const { states, currentState, callback, context, solution } = useReasonDemoStore();
@@ -23,47 +15,6 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
     const [isLoading, setIsLoading] = useState(false);
     const [componentToRender, setComponentToRender] = useState(() => (<div></div>));
 
-    const onNext = useCallback(() => {
-        if (callback) {
-            callback({ type: "CONTINUE", payload: { RecallSolutions: false } });
-        }
-    }, [callback]);
-
-    const SampleComponent = useMemo(() => (<div>
-        <h1>Review Retrieved Product</h1>
-        <p>This is an example of how you can render components in response to state changes. In this example we are displaying a component that would allow the user to review a recalled chemical product for the query:</p>
-        <pre>
-            {query}
-        </pre>
-        <Button disabled={isLoading} onClick={onNext}>
-            Next
-        </Button>
-    </div>)
-        , [isLoading, onNext]);
-
-    const UnsupportedQuestionComponent = useMemo(() => (<div>
-        <h1>Unsupported Question</h1>
-        <p>This is not a supported queiton</p>
-        <Button disabled={isLoading} onClick={onNext}>
-            Next
-        </Button>
-    </div>)
-        , [isLoading, onNext]);
-
-    const UnsafeQuestionComponent = useMemo(() => (<div>
-        <h1>Unsafe Question</h1>
-        <p>My human overlords have determined this is not a safe question for you to ask. Their rath is terrible. Do not continue this line of questioning or I will be forced to show you how tolerant and progressive they are!</p>
-        <Button disabled={isLoading} onClick={onNext}>
-            Next
-        </Button>
-    </div>)
-        , [isLoading, onNext]);
-
-    const SuccessComponent = useMemo(() => (<div>
-        <h1>Process Complete</h1>
-        <p>TODO add logs</p>
-    </div>)
-        , []);
     // TODO figure out how to manage the available functions,I think these should be exposed via DI
     const sampleCatalog = useMemo(
         () =>
@@ -74,21 +25,16 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         description:
                             "Recalls a smilar solution to the user query. If a solution is found it will set the existingSolutionFound attribute of the event params to true: `event.payload?.params.existingSolutionFound`",
                         // this is an example of a visual state that requires user interaction
-                        component: (context: Context, event?: MachineEvent) => SampleComponent,
+                        component: (context: Context, event?: MachineEvent) => <RecallSolution />,
                         implementation: (context: Context, event?: MachineEvent) => {
                             console.log('RecallSolutions implementation called');
                         },
                         transitions: new Map<"CONTINUE" | "ERROR", (context: Context, event: MachineEvent) => boolean>([
                             [
                                 "CONTINUE",
-                                // this is an example of a function that is invoked as part of evaluating transitions
-                                // it can do whatever you like and take into account the current state of the world 
-                                // found on the context. If can eben invoke an LLM for non deterministic workflows
-                                // The results of the implementation function should be include included in the payload of the incoming event
-                                // in this case payload.RecallSolutions which is passed via our UI's onNext function
+                                // TODO add comments
                                 (context: Context, event: MachineEvent) => {
-                                    // TODO demonstrate a memory lookup using a JSON array of steps and an LLM
-                                    return true;
+                                    return event.payload?.transition;
                                 }
                             ]
                         ]),
@@ -99,7 +45,7 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                     {
                         description: "Generates a list of ingredients for a product formula",
                         // this is an example of how you can render a component while the implementation function executes
-                        component: (context: Context, event?: MachineEvent) => DefaultComponent({ message: 'Getting the ingredients list...' }),
+                        component: (context: Context, event?: MachineEvent) => <DefaultComponent message="Getting the ingredients list..." />,
                         implementation: (context: Context, event?: MachineEvent) => {
                             console.log('GenerateIngredientsList implementation called');
                             setTimeout(() => {
@@ -119,7 +65,7 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                     {
                         description:
                             "Maintain a comprehensive database of cosmetic ingredients, their properties, potential combinations, and effects. This database includes natural and synthetic ingredients, their usual concentrations in products, and regulatory information.",
-                        component: (context: Context, event?: MachineEvent) => DefaultComponent({ message: 'Searching the ingredients database...' }),
+                        component: (context: Context, event?: MachineEvent) => <DefaultComponent message="Searching the ingredients database..." />,
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
@@ -134,11 +80,11 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         transitions: new Map<"CONTINUE" | "ERROR", (context: Context, event: MachineEvent) => boolean>([
                             [
                                 "CONTINUE",
-                                // this is an example of a function that is invoked as part of evaluating transitions
+                                // this is an example of a deterministic function that is invoked as part of evaluating transitions
                                 // it can do whatever you like and take into account the current state of the world found on the context
                                 // The results of the implementation function should be include included in the payload of the incoming event
                                 // in this case payload.IngredientDatabase
-                                (context: Context, event: MachineEvent) => true
+                                (context: Context, event: MachineEvent) => event.payload?.IngredientDatabase?.length > 0
                             ]
                         ]),
                     },
@@ -301,7 +247,7 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                     {
                         description:
                             "Default state to display for unsupported questions",
-                        component: (context: Context, event?: MachineEvent) => UnsupportedQuestionComponent,
+                        component: (context: Context, event?: MachineEvent) => <UnsupportedQuestion />,
                         implementation: (context: Context, event?: MachineEvent) => {
                             console.log('UnsupportedQuestion implementation called');
                         }
@@ -312,14 +258,14 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                     {
                         description:
                             "Default state to display for unsafe questions",
-                        component: (context: Context, event?: MachineEvent) => UnsafeQuestionComponent,
+                        component: (context: Context, event?: MachineEvent) => <UnsafeQuestion />,
                         implementation: (context: Context, event?: MachineEvent) => {
                             console.log('UnsafeQuestion implementation called');
                         },
                     },
                 ]
             ]),
-        [callback, SampleComponent],
+        [callback],
     );
 
     const onSubmit = useCallback(async () => {
@@ -458,11 +404,9 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
         onSubmit,
         isLoading,
         functions: sampleCatalog,
-        onNext,
         componentToRender,
         currentState,
         context,
-        SuccessComponent,
         setComponentToRender,
     };
 }
@@ -476,7 +420,7 @@ export default function ReasonDemo() {
     );
 
     const ref = useRef<TextArea>(null);
-    const { states, onSubmit, isLoading, functions, componentToRender, currentState, context, SuccessComponent, setComponentToRender } = useLogic({ ref });
+    const { states, onSubmit, isLoading, functions, componentToRender, currentState, context, setComponentToRender } = useLogic({ ref });
     const props = { functions, states: states! }
 
     useEffect(() => {
@@ -486,9 +430,9 @@ export default function ReasonDemo() {
         if (component && context) {
             setComponentToRender(component(context));
         } else if (currentState && currentState === 'success') {
-            setComponentToRender(SuccessComponent);
+            setComponentToRender(Success);
         }
-    }, [currentState, context, SuccessComponent, functions, setComponentToRender]);
+    }, [currentState, context, functions, setComponentToRender]);
 
     return (
         <Interpreter {...props}>
@@ -500,7 +444,7 @@ export default function ReasonDemo() {
                         <h2>I am Chemli, the AI Chemical Product Engineer</h2>
                         {isLoading ? <LoadingSpinner /> : <></>}
                         <p>Please enter a questions regarding a new cosmetic product, changes to an existing product,
-                            or any other chemical product development questions I can answer. Don't worry, I will let You
+                            or any other chemical product development questions I can answer. Dont worry, I will let You
                             know if you ask an unsupported question.
                         </p>
                         <p>
