@@ -10,23 +10,23 @@ export async function solver(query: string) {
 
   Q: Create a new face creme that includes blueberries.
   A: 1. Recall any existing solutions for face creme that includes blueberries.
-2. If an existing solution cannot be used, generate the ingredients list.
-3. Perform an ingredients database search for relevant ingredients.
-4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
-5. Once those steps are complete, perform a formula simulation.
-6. Have an expert review the generated formula.
-7. Perform lab testing.
-8. Evaluate the complete tested formula.
-9. Generate the manufacturing instructions.
-10. Have an expert review the generated manufacturing instructions.
-11. Generate the manufacturing instructions.
-12. Conduct market research.
-13. Generate marketing claims using the output of step 11
-14. Generate a product image.
+  2. If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list.
+  3. Perform an ingredients database search for relevant ingredients.
+  4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
+  5. Once those steps are complete, perform a formula simulation.
+  6. Have an expert review the generated formula.
+  7. Perform lab testing.
+  8. Evaluate the complete tested formula.
+  9. Generate the manufacturing instructions.
+  10. Have an expert review the generated manufacturing instructions.
+  11. Generate the manufacturing instructions.
+  12. Conduct market research.
+  13. Generate marketing claims using the output of step 11
+  14. Generate a product image.
 
 Q: Create a mint lip balm product
 A: 1. Recall any existing solutions for lip balm product
-2. If an existing solution cannot be used, generate the ingredients list.
+2. If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list.
 3. Perform an ingredients database search for relevant ingredients.
 4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
 5. Once those steps are complete, perform a formula simulation.
@@ -42,7 +42,7 @@ A: 1. Recall any existing solutions for lip balm product
 
 Q: Create a new citrus shower gel
 A: 1. Recall any existing solutions for citrus shower gel
-2. If an existing solution cannot be used, generate the ingredients list.
+2. If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list.
 3. Perform an ingredients database search for relevant ingredients.
 4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
 5. Once those steps are complete, perform a formula simulation.
@@ -378,7 +378,7 @@ A: [
 ]
 
 Q: 1. Recall any existing solutions for peppermint lip balm
-2. If an existing solution cannot be used, generate the ingredients list.
+2. If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list.
 3. Perform an ingredients database search for relevant ingredients.
 4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
 5. Once those steps are complete, perform a formula simulation.
@@ -510,7 +510,7 @@ Q: 1. Recall any existing solutions for peppermint lip balm
 ]
 
 Q: 1. Recall any existing solutions for face creme that includes blueberries.
-2. If an existing solution cannot be used, generate the ingredients list.
+2. If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list.
 3. Perform an ingredients database search for relevant ingredients.
 4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
 5. Once those steps are complete, perform a formula simulation.
@@ -755,6 +755,36 @@ export async function aiTransition(taskList: string, currentState: string, state
 
   You can only response with true or false
   A: true
+
+  Q:Based on the following task list:
+  1. Recall an existing solutions
+  2. If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list.
+  3. Perform an ingredients database search for relevant ingredients.
+  4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
+  5. Once those steps are complete, perform a formula simulation.
+  6. Have an expert review the generated formula.
+  7. Perform lab testing.
+  8. Evaluate the complete tested formula.
+  9. Generate the manufacturing instructions.
+  10. Have an expert review the generated manufacturing instructions.
+  11. Generate the manufacturing instructions.
+  12. Conduct market research.
+  13. Generate marketing claims using the output of step 11
+  14. Generate a product image.
+
+  The current state of the application is:
+  Recalled Solution
+  The result of that state is:
+  {"RecallSolutions":{"phases":
+  {"A": [...phases], "B": [...]}
+  "Manufacturing Procedure": "1. Mix phase (A) and (B)"...,
+  ...more solution attributes
+}}
+
+  Return true (the stat's condition for transition has been met) or false (the state's condition for transition has not been me)
+
+  You can only response with true or false
+  A: false
 
   ### End training data ###
 
