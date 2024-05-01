@@ -29,15 +29,6 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             console.log('RecallSolutions implementation called');
                         },
-                        transitions: new Map<"CONTINUE" | "ERROR", (context: Context, event: MachineEvent) => boolean>([
-                            [
-                                "CONTINUE",
-                                // TODO add comments
-                                (context: Context, event: MachineEvent) => {
-                                    return event.payload?.transition;
-                                }
-                            ]
-                        ]),
                     },
                 ],
                 [
@@ -70,9 +61,11 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                             setTimeout(() => {
                                 // TODO all real implementation
                                 if (callback) {
+                                    // depending on the path taken GenerateIngredientsList could be undefined
+                                    const currentList = context.GenerateIngredientsList || [];
                                     callback({
                                         type: "CONTINUE",
-                                        payload: { IngredientDatabase: [...context.GenerateIngredientsList, ["Bee Wax 1234 Special Proprietary", "30%", "A"]] },
+                                        payload: { IngredientDatabase: [...currentList, ["Bee Wax 1234 Special Proprietary", "30%", "A"]] },
                                     });
                                 }
                             }, 5000);

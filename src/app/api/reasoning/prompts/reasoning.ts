@@ -715,35 +715,47 @@ Only responds in JSON using the Chemli DSL.
   return { user, system };
 }
 
-export async function aiTransition(taskList: string, currentState: string, stateValue: string) {
+export async function aiTransition(taskList: string, currentState: string, payload: string) {
   const system = `
   You are an AI based reasoning engine called Transit. Transit determines if state machine transitions should take place.
-  Transit only returns true or false and is never chatty.
-  Transit only considered the information provided by the user to determine if it should return true or false.
+  Transit only returns a valid transition target and is never chatty.
+  Transit only considered the information provided by the user to determine which transition target to return
   `;
 
   const user = `
   ### Start training data ###
-  Q:Based on the following task list:
+  Q: Based on the following task list:
   1. Recall solution for sku #1234 face cream.
   2. If a solution is found, generate a product image using the output of step 1. If the solution is not found, exit.
 
   The current state of the application is:
-  Recalled Solution
+  {
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "GenerateProductImage" },
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  }
   The result of that state is:
   {"RecallSolutions":"No solution found"}
 
-  Return true (the stat's condition for transition has been met) or false (the state's condition for transition has not been me)
+  Return the target for the next state.
+  A: success
 
-  You can only response with true or false
-  A: false
-
-  Q:Based on the following task list:
+  Q: Based on the following task list:
   1. Recall solution for sku #1234 face cream.
   2. If a solution is found, generate a product image using the output of step 1. If the solution is not found, exit.
 
   The current state of the application is:
-  Recalled Solution
+  {
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "GenerateProductImage" },
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  }
   The result of that state is:
   {"RecallSolutions":{"phases": 
   {"A": [...phases], "B": [...]}
@@ -751,12 +763,10 @@ export async function aiTransition(taskList: string, currentState: string, state
   ...more solution attributes
 }}
 
-  Return true (the stat's condition for transition has been met) or false (the state's condition for transition has not been me)
+  Return the target for the next state.
+  A: GenerateProductImage
 
-  You can only response with true or false
-  A: true
-
-  Q:Based on the following task list:
+  Q: Based on the following task list:
   1. Recall an existing solutions
   2. If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list.
   3. Perform an ingredients database search for relevant ingredients.
@@ -773,7 +783,14 @@ export async function aiTransition(taskList: string, currentState: string, state
   14. Generate a product image.
 
   The current state of the application is:
-  Recalled Solution
+  {
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "GenerateIngredientsList" },
+      { "on": "CONTINUE", "target": "IngredientDatabase" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  }
   The result of that state is:
   {"RecallSolutions":{"phases":
   {"A": [...phases], "B": [...]}
@@ -781,10 +798,8 @@ export async function aiTransition(taskList: string, currentState: string, state
   ...more solution attributes
 }}
 
-  Return true (the stat's condition for transition has been met) or false (the state's condition for transition has not been me)
-
-  You can only response with true or false
-  A: false
+  Return the target for the next state.
+  A: IngredientDatabase
 
   ### End training data ###
 
@@ -794,11 +809,9 @@ export async function aiTransition(taskList: string, currentState: string, state
  The current state of the application is:
   ${currentState}
   The result of that state is:
-  ${stateValue}
+  ${payload}
 
-  Return true (the state's condition for transition has been met) or false (the state's condition for transition has not been me)
-
-  You can only response with true or false
+  Return the target for the next state.
   `;
 
   return { system, user };

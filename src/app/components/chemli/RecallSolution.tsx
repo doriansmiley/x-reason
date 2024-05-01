@@ -5,25 +5,24 @@ import { engineV2 as engine } from "@/app/api/reasoning";
 import { useReasonDemoStore } from "@/app/context/ReasoningDemoContext";
 
 export default function RecallSolution() {
-    const { callback, query, solution } = useReasonDemoStore();
+    const { states, currentState, callback, query, solution } = useReasonDemoStore();
     const onNext = useCallback(async (sampleRecalledSolution: string) => {
         if (callback) {
             const payload = {
                 RecallSolutions: sampleRecalledSolution,
-                transition: false,
             };
             // this is an example of a non deterministic function that is invoked as part of evaluating transitions
             // it uses the default LLM reasoning function included as part of the engine.logic.transition function
             // This is just an example of how to use LLMs to reason about transition logic
-            const result = await engine.logic.transition(solution!, 'Recalled Solution', JSON.stringify(payload));
-            payload.transition = result;
+            const state = states?.find((item) => item.id === currentState);
+            const result = await engine.logic.transition(solution!, JSON.stringify(state), JSON.stringify(payload));
 
             callback({
-                type: "CONTINUE",
+                type: result,
                 payload
             });
         }
-    }, [callback, solution]);
+    }, [callback, solution, currentState, states]);
     const sampleRecalledSolution = `
             {"phases": {
     "A": [

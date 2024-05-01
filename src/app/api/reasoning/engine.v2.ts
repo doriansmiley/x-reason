@@ -111,8 +111,8 @@ async function evaluate(input: EvaluationInput): Promise<EvaluatorResult> {
     };
 }
 
-async function transition(taskList: string, currentState: string, stateValue: string): Promise<boolean> {
-    const { user, system } = await aiTransition(taskList, currentState, stateValue);
+async function transition(taskList: string, currentState: string, payload: string): Promise<string> {
+    const { user, system } = await aiTransition(taskList, currentState, payload);
 
     const result = await chatCompletion({
         messages: [
@@ -122,10 +122,10 @@ async function transition(taskList: string, currentState: string, stateValue: st
         model: "gpt-4-0125-preview", // gpt-4-0125-preview, gpt-4
         //response_format: { type: "json_object" } gpt-4-0125-preview
     });
-    let value = result;
+    let value = result!;
     console.log(`engine.v2.ts.transition result is: ${value}`);
     // TODO improve retry mechanism
-    if (value !== 'true' && value !== 'false') {
+    if (currentState.indexOf(value) < 0) {
         const result = await chatCompletion({
             messages: [
                 { role: 'system', content: system },
@@ -133,20 +133,19 @@ async function transition(taskList: string, currentState: string, stateValue: st
                 {
                     role: 'user', content: `your generated solution:
                 ${value}
-                does not conform to the required output format!
-                You must respond with either "true" or "false"!
+                does not include a valid transition ID! Make sure your are picking a transition ID from the provided state's transitions array
                 Do not be chatty!
                 ` },
             ],
             model: "gpt-4",
         });
-        value = result;
-        if (value !== 'true' && value !== 'false') {
+        value = result!;
+        if (currentState.indexOf(value) < 0) {
             throw new Error(`Invalid model response: ${value}`);
         }
     }
 
-    return value === 'true';
+    return value;
 }
 
 const implementation: ReasoningEngine = {

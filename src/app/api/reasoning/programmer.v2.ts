@@ -49,10 +49,23 @@ function generateStateConfig(state: StateConfig, functionCatalog: Map<string, Ta
     };
     // TODO augment with retrievedFunction.transitions.
     if (state.transitions) {
-        stateConfig.on = {
-            CONTINUE: state.transitions.filter((transition) => transition.on === "CONTINUE").map((transition) => getTransition(transition, retrievedFunction, 'CONTINUE')),
-            ERROR: state.transitions.filter((transition) => transition.on === "ERROR").map((transition) => getTransition(transition, retrievedFunction, 'ERROR')),
-        };
+        // there is more than one condition, meaning we need dynamic transition provided by the LLM
+        // The LLM will determine which event to dispatch
+        if (state.transitions.length > 2) {
+            stateConfig.on = {};
+            state.transitions.filter((transition) => transition.on === "CONTINUE").forEach((transition) => {
+                stateConfig.on[transition.target] = {
+                    target: transition.target,
+                    actions: transition.actions || "saveResult",
+                }
+            });
+            stateConfig.on.ERROR = state.transitions.filter((transition) => transition.on === "ERROR").map((transition) => getTransition(transition, retrievedFunction, 'ERROR'));
+        } else {
+            stateConfig.on = {
+                CONTINUE: state.transitions.filter((transition) => transition.on === "CONTINUE").map((transition) => getTransition(transition, retrievedFunction, 'CONTINUE')),
+                ERROR: state.transitions.filter((transition) => transition.on === "ERROR").map((transition) => getTransition(transition, retrievedFunction, 'ERROR')),
+            };
+        }
     }
 
     if (state.type === "parallel") {
