@@ -64,6 +64,10 @@ Q: Generate marketing claims for our 2024 citrus shower gel line
 A: 1. Recall solution for 2024 citrus shower gel line
 2. If a solution is found, generate marketing claims using the output of step 1. If the solution is not found exit.
 
+Q: Generate marketing claims for sku# ASdf324 2024 citrus shower gel line
+A: 1. Recall solution for 2024 citrus shower gel line
+2. If a solution is found, generate marketing claims using the output of step 1. If the solution is not found exit.
+
 Q: I need a new formula for vanilla face cream
 A: 1. Generate the ingredients list.
 3. Perform an ingredients database search for relevant ingredients.

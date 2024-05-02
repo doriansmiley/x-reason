@@ -6,6 +6,7 @@ import { Button, Card, Elevation, TextArea, Intent, Spinner, SpinnerSize } from 
 import { Context, MachineEvent, Task, engineV2 as engine } from "@/app/api/reasoning";
 import Interpreter from "@/app/api/reasoning/Interpreter.v2.headed";
 import { ReasonDemoActionTypes, useReasonDemoStore, useReasonDemoDispatch } from "@/app/context/ReasoningDemoContext";
+import { programmer, solver } from "@/app/api/reasoning/prompts";
 import { Success, RecallSolution, UnsafeQuestion, UnsupportedQuestion, DefaultComponent } from "./chemli";
 
 function useLogic({ ref }: { ref: RefObject<TextArea> }) {
@@ -370,10 +371,9 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                 },
             ],
         ]);
-
-        const solverSolution = await engine.solver.solve(userQuery!);
+        const solverSolution = await engine.solver.solve(userQuery!, solver);
         // generate the program
-        const result = await engine.programmer.program(solverSolution, JSON.stringify(Array.from(toolsCatalog.entries())));
+        const result = await engine.programmer.program(solverSolution, JSON.stringify(Array.from(toolsCatalog.entries())), programmer);
         console.log(`programmer returned: ${result}`);
         const evaluationResult = await engine.evaluator.evaluate({ states: result, tools: sampleCatalog })
         if (evaluationResult.rating === 0) {

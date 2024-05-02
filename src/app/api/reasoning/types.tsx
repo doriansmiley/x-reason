@@ -28,13 +28,13 @@ export interface StateMachineConfig {
 
 export type Solver = {
   // generates the instructions for solving the query
-  solve(query: string): Promise<string>;
+  solve(query: string, solver: Prompt): Promise<string>;
 };
 
 export type Programer = {
   // the input is the result of Solver.solve
   // generates the state machine config used by the interpreter
-  program(query: string, functionCatalog: string): Promise<StateConfig[]>;
+  program(query: string, functionCatalog: string, programmer: Prompt): Promise<StateConfig[]>;
 };
 
 export type EvaluationInput = {
@@ -56,8 +56,10 @@ export type AiTransition = {
   // takes the task list returned by the solver, the id of the current state, 
   // and the value returned by the state's implementation function
   // returns true or false
-  transition(taskList: string, currentState: string, stateValue: string): Promise<string>;
+  transition(taskList: string, currentState: string, stateValue: string, aiTransition: Prompt): Promise<string>;
 };
+
+export type Prompt = (...args: any[]) => Promise<{ user: string; system: string; }>
 
 export type ReasoningEngine = {
   solver: Solver;

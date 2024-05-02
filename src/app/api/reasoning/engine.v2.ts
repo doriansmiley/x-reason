@@ -8,13 +8,13 @@ import {
     EvaluatorResult,
     ReasoningEngine,
     programV2,
+    Prompt,
 } from ".";
 
-import { aiTransition, programmer, solver } from "./prompts";
 import { extractJsonFromBackticks } from "@/app/utils";
 
 
-async function solve(query: string, thread?: Thread): Promise<string> {
+async function solve(query: string, solver: Prompt): Promise<string> {
     // TODO remove the use of the threads API and go with completions
     const { user, system } = await solver(query);
 
@@ -29,7 +29,7 @@ async function solve(query: string, thread?: Thread): Promise<string> {
     return value || '';
 }
 
-async function program(query: string, functionCatalog: string, thread?: Thread): Promise<StateConfig[]> {
+async function program(query: string, functionCatalog: string, programmer: Prompt): Promise<StateConfig[]> {
     const { user, system } = await programmer(query, functionCatalog);
 
     const result = await chatCompletion({
@@ -111,7 +111,7 @@ async function evaluate(input: EvaluationInput): Promise<EvaluatorResult> {
     };
 }
 
-async function transition(taskList: string, currentState: string, payload: string): Promise<string> {
+async function transition(taskList: string, currentState: string, payload: string, aiTransition: Prompt): Promise<string> {
     const { user, system } = await aiTransition(taskList, currentState, payload);
 
     const result = await chatCompletion({

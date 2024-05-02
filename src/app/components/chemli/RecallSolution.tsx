@@ -3,6 +3,7 @@ import { Button } from "@blueprintjs/core";
 
 import { engineV2 as engine } from "@/app/api/reasoning";
 import { useReasonDemoStore } from "@/app/context/ReasoningDemoContext";
+import { aiTransition } from "@/app/api/reasoning/prompts";
 
 export default function RecallSolution() {
     const { states, currentState, callback, query, solution } = useReasonDemoStore();
@@ -15,7 +16,7 @@ export default function RecallSolution() {
             // it uses the default LLM reasoning function included as part of the engine.logic.transition function
             // This is just an example of how to use LLMs to reason about transition logic
             const state = states?.find((item) => item.id === currentState);
-            const result = await engine.logic.transition(solution!, JSON.stringify(state), JSON.stringify(payload));
+            const result = await engine.logic.transition(solution!, JSON.stringify(state), JSON.stringify(payload), aiTransition);
 
             callback({
                 type: result,
