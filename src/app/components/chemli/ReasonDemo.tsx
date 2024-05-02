@@ -7,7 +7,7 @@ import { Context, MachineEvent, Task, engineV2 as engine } from "@/app/api/reaso
 import Interpreter from "@/app/api/reasoning/Interpreter.v2.headed";
 import { ReasonDemoActionTypes, useReasonDemoStore, useReasonDemoDispatch } from "@/app/context/ReasoningDemoContext";
 import { programmer, solver } from "@/app/api/reasoning/prompts";
-import { Success, RecallSolution, UnsafeQuestion, UnsupportedQuestion, DefaultComponent } from "./chemli";
+import { Success, RecallSolution, UnsafeQuestion, UnsupportedQuestion, DefaultComponent } from ".";
 
 function useLogic({ ref }: { ref: RefObject<TextArea> }) {
     const { states, currentState, callback, context, solution } = useReasonDemoStore();
