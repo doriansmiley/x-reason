@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { Button } from "@blueprintjs/core";
 
-import { engineV2 as engine } from "@/app/api/reasoning";
+import { engineV1 as engine } from "@/app/api/reasoning";
 import { useReasonDemoStore } from "@/app/context/ReasoningDemoContext";
 import { aiTransition } from "@/app/api/reasoning/prompts";
 
