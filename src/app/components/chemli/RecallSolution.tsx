@@ -156,16 +156,13 @@ export default function RecallSolution() {
             <FormulaTable table={formula} className="formula-table" />
         </div>
         <p>
-            Clicking this button simulates a recalled solution being found.
-            <Button onClick={() => onNext(sampleRecalledSolution)}>
-                Next
-            </Button>
+            Using the recalled solution will trigger a different path.
         </p>
-        <p>
-            Clicking this button simulates a recalled solution NOT being found.
-            <Button onClick={() => onNext('No solution found')}>
-                Next
-            </Button>
-        </p>
+        <Button onClick={() => onNext(sampleRecalledSolution)}>
+            Use Recalled Solution
+        </Button>
+        <Button onClick={() => onNext('No solution found')}>
+            Dont Use Recalled Solution
+        </Button>
     </div>)
 }

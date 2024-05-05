@@ -44,12 +44,12 @@ export type EvaluationInput = {
   tools?: Map<string, Task>,
 };
 
-export type EvaluatorResult = { rating: number; error?: Error };
+export type EvaluatorResult = { rating: number; error?: Error, correct?: boolean, revised?: string };
 
 export type Evaluator = {
   // takes the user's query with the generated instructions from the solver
   // and the output machine config from the programmer
-  evaluate(input: EvaluationInput): Promise<EvaluatorResult>;
+  evaluate(input: EvaluationInput, evaluate: Prompt): Promise<EvaluatorResult>;
 };
 
 export type AiTransition = {

@@ -37,7 +37,7 @@ async function program(query: string, functionCatalog: string, programmer: Promp
             { role: 'user', content: user },
         ],
         model: "gpt-4", // gpt-4-0125-preview, gpt-4
-        //response_format: { type: "json_object" } gpt-4-0125-preview
+        // response_format: { type: "json_object" }
     });
     const value = result || '';
     let unwrapped = extractJsonFromBackticks(value) || value;
@@ -83,14 +83,20 @@ async function program(query: string, functionCatalog: string, programmer: Promp
         // TODO, return a recursive call to program if max count has not been exceeded
         throw new Error(`Unknown state ID encountered: ${notFound.join(',')}`)
     }
-
+    console.log(`programmer returned: ${unwrapped}`);
     return JSON.parse(unwrapped) as StateConfig[];
 }
 
-async function evaluate(input: EvaluationInput): Promise<EvaluatorResult> {
+async function evaluate(input: EvaluationInput, evaluate: Prompt): Promise<EvaluatorResult> {
+    let evaluation = {
+        rating: 0,
+        correct: false,
+    }
     try {
         const machine = programV1(input.states, input.tools!);
+        const { user, system } = await evaluate(input.query, JSON.stringify(input.states));
 
+        // see if the machine compiles
         const withContext = machine.withContext({
             status: 0,
             requestId: "test",
@@ -98,6 +104,43 @@ async function evaluate(input: EvaluationInput): Promise<EvaluatorResult> {
         });
 
         const machineExecution = interpret(withContext);
+
+        // Now have the evaluator evaluate the result
+        const result = await chatCompletion({
+            messages: [
+                { role: 'system', content: system },
+                { role: 'user', content: user },
+            ],
+            model: "gpt-4", // gpt-4-0125-preview, gpt-4
+            //response_format: { type: "json_object" } gpt-4-0125-preview
+        });
+        const value = result || '';
+        let unwrapped = extractJsonFromBackticks(value) || value;
+
+        // check the quality of the result
+        try {
+            evaluation = JSON.parse(unwrapped);
+        } catch (e) {
+            const result = await chatCompletion({
+                messages: [
+                    { role: 'system', content: system },
+                    { role: 'user', content: user },
+                    {
+                        role: 'user', content: `your generated evaluation:
+                ${unwrapped}
+                generated the following error:
+                ${(e as Error).message}
+                Ensure the JSON is valid and does not contain any trailing commas, correct quotes, etc
+                Only respond with the updated JSON! Your response will be sent to JSON.parse
+                ` },
+                ],
+                model: "gpt-4",
+                //response_format: { type: "json_object" }
+            });
+            const value = result || '';
+            unwrapped = extractJsonFromBackticks(value) || value;
+            evaluation = JSON.parse(unwrapped);
+        }
     } catch (e) {
         return {
             rating: 0,
@@ -105,9 +148,8 @@ async function evaluate(input: EvaluationInput): Promise<EvaluatorResult> {
         };
     }
     // TODO better evaluation. For now if it compiles we are good. When we have evaluator models we'll expand
-    return {
-        rating: 1,
-    };
+    console.log(`evaluator responded with: ${JSON.stringify(evaluation)}`);
+    return evaluation;
 }
 
 async function transition(taskList: string, currentState: string, payload: string, aiTransition: Prompt): Promise<string> {
