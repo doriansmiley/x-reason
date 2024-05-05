@@ -1,0 +1,309 @@
+.top-menu {
+  width: 100%;
+  background: #f6f7f9;
+  border-bottom: 1px solid #e5e8eb;
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  .formula-search-button {
+    margin-left: -1px;
+  }
+
+  .search-bar {
+    width: 500px;
+  }
+}
+
+.formula-content,
+.common-header,
+.marketing-content {
+  padding: 1rem;
+}
+
+.formula-title {
+  margin-bottom: 20px;
+}
+
+.formula-description {
+  margin-bottom: 20px;
+}
+
+.formula-control-button-group {
+  margin-bottom: 20px;
+
+  .generate-formula-button > span.bp5-button-text {
+    min-width: 150px;
+    display: inline-block;
+    min-height: 8px;
+  }
+}
+
+.formula-table {
+  margin-bottom: 20px;
+
+  .table-operators {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.formula-container {
+  display: flex;
+}
+
+.manufacturing-step-title {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.markdown-editor-main {
+  height: 600px;
+}
+
+.right-pane {
+  display: flex;
+  padding-left: 50px;
+
+  ul > li {
+    margin-left: -20px;
+  }
+}
+
+.formula-editor-wrapper-card {
+  margin-bottom: 20px;
+}
+
+.phase-background-a {
+  background: #ff9980;
+}
+.phase-background-a2 {
+  background: #ffa990;
+}
+.phase-background-b {
+  background: #68c1ee;
+}
+.phase-background-b2 {
+  background: #78d1fe;
+}
+.phase-background-c {
+  background: #62d96b;
+}
+.phase-background-c2 {
+  background: #72e97b;
+}
+.phase-background-d {
+  background: #d0b090;
+}
+.phase-background-d2 {
+  background: #e0c0a0;
+}
+.phase-background-e {
+  background: #bdadff;
+}
+.phase-background-e2 {
+  background: #cdbdbf;
+}
+.phase-background-f {
+  background: #ff66a1;
+}
+.phase-background-f2 {
+  background: #cf4691;
+}
+.phase-background-g {
+  background: #d4f17e;
+}
+.phase-background-g2 {
+  background: #c4e16e;
+}
+
+.phase-background-none {
+  background: #c5cbd3;
+}
+.phase-background-none2 {
+  background: #edeff2;
+}
+
+.fork-popup,
+.commit-popup {
+  position: absolute;
+  top: 70px;
+  z-index: 10;
+
+  .fork-popup-switch {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .popup-divider {
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+
+  .popup-textarea {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .popup-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+
+    .bp5-button {
+      margin-left: 10px;
+    }
+  }
+}
+
+.history-content {
+  padding-left: 20px;
+  padding-right: 20px;
+
+  .history-menu {
+    margin-bottom: 40px;
+  }
+
+  .commit-comparison {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .first-commit-view {
+    display: flex;
+    max-width: 50%;
+    .commit-log-pane {
+      margin-right: 20px;
+    }
+  }
+  .second-commit-view {
+    flex-direction: row-reverse;
+    display: flex;
+    max-width: 50%;
+    .commit-log-pane {
+      margin-left: 20px;
+    }
+  }
+
+  .commit-log-pane {
+    min-width: 100px;
+    max-width: 300px;
+  }
+
+  .commit-content {
+    flex: 1;
+
+    > div {
+      margin-bottom: 20px;
+    }
+  }
+
+  .change-summary {
+    margin-bottom: 20px;
+  }
+}
+
+.diff-table-cell-is-different {
+  background-color: #fa999c;
+}
+
+.commit-author {
+  font-size: 0.8em;
+  display: inline-block;
+  margin-top: 10px;
+  color: #383e47;
+}
+
+@media (max-width: 900px) {
+  .formula-container {
+    flex-direction: column;
+  }
+  .right-pane {
+    padding-top: 20px;
+    padding-left: 0;
+    flex-direction: column;
+  }
+
+  .top-menu {
+    flex-direction: column;
+
+    .left-group {
+      margin-bottom: 10px;
+
+      .bp5-button-group {
+        width: 100%;
+
+        .search-bar {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .commit-author {
+    color: #738091;
+  }
+
+  .diff-table-cell-is-different {
+    background-color: #8e292c;
+  }
+
+  .top-menu {
+    background: #111418;
+    border-bottom: 1px solid #404854;
+  }
+
+  .phase-background-a {
+    background: #7f2910;
+  }
+  .phase-background-a2 {
+    background: #9f3920;
+  }
+  .phase-background-b {
+    background: #0c5174;
+  }
+  .phase-background-b2 {
+    background: #147eb3;
+  }
+  .phase-background-c {
+    background: #1d7324;
+  }
+  .phase-background-c2 {
+    background: #238c2c;
+  }
+  .phase-background-d {
+    background: #5e4123;
+  }
+  .phase-background-d2 {
+    background: #7a542e;
+  }
+  .phase-background-e {
+    background: #5642a6;
+  }
+  .phase-background-e2 {
+    background: #634dbf;
+  }
+  .phase-background-f {
+    background: #a82255;
+  }
+  .phase-background-f2 {
+    background: #c22762;
+  }
+  .phase-background-g {
+    background: #43501b;
+  }
+  .phase-background-g2 {
+    background: #5a701a;
+  }
+  .phase-background-none {
+    background: #383e47;
+  }
+  .phase-background-none2 {
+    background: #404854;
+  }
+}

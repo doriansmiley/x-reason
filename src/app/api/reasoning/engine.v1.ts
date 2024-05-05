@@ -1,6 +1,5 @@
 import { interpret } from "xstate";
 import { chatCompletion } from "@/app/api/openai";
-import { Thread } from "openai/resources/beta/index.mjs";
 
 import {
     StateConfig,
