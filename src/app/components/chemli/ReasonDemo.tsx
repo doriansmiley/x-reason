@@ -24,7 +24,7 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                     "RecallSolutions",
                     {
                         description:
-                            "Recalls a smilar solution to the user query. If a solution is found it will set the existingSolutionFound attribute of the event params to true: `event.payload?.params.existingSolutionFound`",
+                            "Recalls a similar solution to the user query. If a solution is found it will set the existingSolutionFound attribute of the event params to true: `event.payload?.params.existingSolutionFound`",
                         // this is an example of a visual state that requires user interaction
                         component: (context: Context, event?: MachineEvent) => <RecallSolution />,
                         implementation: (context: Context, event?: MachineEvent) => {

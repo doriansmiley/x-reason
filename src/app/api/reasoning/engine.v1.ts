@@ -22,7 +22,7 @@ async function solve(query: string, solver: Prompt): Promise<string> {
             { role: 'system', content: system },
             { role: 'user', content: user },
         ],
-        model: "gpt-4-0125-preview" // gpt-4-0125-preview, gpt-4
+        model: "gpt-4" // gpt-4-0125-preview, gpt-4
     });
     const value = result;
     return value || '';
@@ -41,6 +41,8 @@ async function program(query: string, functionCatalog: string, programmer: Promp
     });
     const value = result || '';
     let unwrapped = extractJsonFromBackticks(value) || value;
+
+    console.log(`programmer generated the following unchecked solution: ${unwrapped}`);
 
     // check the quality of the result
     try {
@@ -65,7 +67,7 @@ async function program(query: string, functionCatalog: string, programmer: Promp
         const value = result || '';
         unwrapped = extractJsonFromBackticks(value) || value;
     }
-    const states: StateConfig[] = JSON.parse(unwrapped);
+    let states: StateConfig[] = JSON.parse(unwrapped);
 
     // make sure the state ID's are valid
     const notFound = states.map((state) => {
@@ -81,7 +83,25 @@ async function program(query: string, functionCatalog: string, programmer: Promp
         .map((item) => item?.id);
     if (notFound.length > 0) {
         // TODO, return a recursive call to program if max count has not been exceeded
-        throw new Error(`Unknown state ID encountered: ${notFound.join(',')}`)
+        const result = await chatCompletion({
+            messages: [
+                { role: 'system', content: system },
+                { role: 'user', content: user },
+                {
+                    role: 'user', content: `your generated solution:
+                ${unwrapped}
+                generated the following error:
+                Unknown state ID encountered: ${notFound.join(',')}
+                Replace the valid state ID's with valid ones found in the function catalog!
+                Only respond with the updated JSON! Your response will be sent to JSON.parse
+                ` },
+            ],
+            model: "gpt-4",
+            //response_format: { type: "json_object" }
+        });
+        const value = result || '';
+        // TODO retest valid states by moving logic to a util function
+        unwrapped = extractJsonFromBackticks(value) || value;
     }
     console.log(`programmer returned: ${unwrapped}`);
     return JSON.parse(unwrapped) as StateConfig[];
