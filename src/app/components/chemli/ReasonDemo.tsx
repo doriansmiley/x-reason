@@ -10,7 +10,7 @@ import { programmer, solver, evaluate } from "@/app/api/reasoning/prompts";
 import { Success, RecallSolution, UnsafeQuestion, UnsupportedQuestion, DefaultComponent } from ".";
 
 function useLogic({ ref }: { ref: RefObject<TextArea> }) {
-    const { states, currentState, callback, context, solution } = useReasonDemoStore();
+    const { states, currentState, context, solution, functions } = useReasonDemoStore();
     const dispatch = useReasonDemoDispatch();
     const [query, setQuery] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
@@ -42,12 +42,15 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                             console.log('GenerateIngredientsList implementation called');
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    callback({
-                                        type: "CONTINUE",
-                                        payload: { GenerateIngredientsList: [] },
-                                    });
-                                }
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: {
+                                            type: "CONTINUE",
+                                            payload: { GenerateIngredientsList: [] },
+                                        },
+                                    }
+                                });
                             }, 5000);
                         },
                     },
@@ -61,14 +64,16 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    // depending on the path taken GenerateIngredientsList could be undefined
-                                    const currentList = context.GenerateIngredientsList || [];
-                                    callback({
-                                        type: "CONTINUE",
-                                        payload: { IngredientDatabase: [...currentList, ["Bee Wax 1234 Special Proprietary", "30%", "A"]] },
-                                    });
-                                }
+                                const currentList = context.GenerateIngredientsList || [];
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: {
+                                            type: "CONTINUE",
+                                            payload: { IngredientDatabase: [...currentList, ["Bee Wax 1234 Special Proprietary", "30%", "A"]] },
+                                        },
+                                    }
+                                });
                             }, 5000);
                         },
                         transitions: new Map<"CONTINUE" | "ERROR", (context: Context, event: MachineEvent) => boolean>([
@@ -91,9 +96,15 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    callback({ type: "CONTINUE", payload: { RegulatoryCheck: "no regulatory issues were found" } });
-                                }
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: {
+                                            type: "CONTINUE",
+                                            payload: { RegulatoryCheck: "no regulatory issues were found" }
+                                        },
+                                    }
+                                });
                             }, 1);
                         },
                     },
@@ -106,19 +117,22 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    callback({
-                                        type: "CONTINUE",
-                                        payload: {
-                                            ConcentrationEstimation: [
-                                                ["ingredient", "tolerance%"],
-                                                ["Bee Wax", "30-31%"],
-                                                ["Coconut Oil", "40-45%"],
-                                                ["Tree Resin", "20-21%%"],
-                                            ],
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: {
+                                            type: "CONTINUE",
+                                            payload: {
+                                                ConcentrationEstimation: [
+                                                    ["ingredient", "tolerance%"],
+                                                    ["Bee Wax", "30-31%"],
+                                                    ["Coconut Oil", "40-45%"],
+                                                    ["Tree Resin", "20-21%%"],
+                                                ],
+                                            },
                                         },
-                                    });
-                                }
+                                    }
+                                });
                             }, 1);
                         },
                     },
@@ -130,9 +144,12 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    callback({ type: "CONTINUE", payload: { FormulationSimulation: "no available simulations were found" } });
-                                }
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: { type: "CONTINUE", payload: { FormulationSimulation: "no available simulations were found" } },
+                                    }
+                                });
                             }, 1);
                         },
                     },
@@ -144,9 +161,12 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    callback({ type: "CONTINUE", payload: { ExpertReview: "Certified by Dorian Smiley on 2/2/24" } });
-                                }
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: { type: "CONTINUE", payload: { ExpertReview: "Certified by Dorian Smiley on 2/2/24" } },
+                                    }
+                                });
                             }, 1);
                         },
                     },
@@ -158,9 +178,12 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    callback({ type: "CONTINUE", payload: { LabTesting: "Certified by Dorian Smiley on 2/2/24" } });
-                                }
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: { type: "CONTINUE", payload: { LabTesting: "Certified by Dorian Smiley on 2/2/24" } },
+                                    }
+                                });
                             }, 1);
                         },
                     },
@@ -172,9 +195,12 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    callback({ type: "CONTINUE", payload: { Evaluation: 0.95 } });
-                                }
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: { type: "CONTINUE", payload: { Evaluation: 0.95 } },
+                                    }
+                                });
                             }, 1);
                         },
                     },
@@ -187,9 +213,12 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    callback({ type: "CONTINUE", payload: { ManufacturingInstructions: "The steps are..." } });
-                                }
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: { type: "CONTINUE", payload: { ManufacturingInstructions: "The steps are..." } },
+                                    }
+                                });
                             }, 1);
                         },
                     },
@@ -201,9 +230,12 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    callback({ type: "CONTINUE", payload: { MarketResearch: "You market is as follows..." } });
-                                }
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: { type: "CONTINUE", payload: { MarketResearch: "You market is as follows..." } },
+                                    }
+                                });
                             }, 1);
                         },
                     },
@@ -215,9 +247,12 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    callback({ type: "CONTINUE", payload: { CreateMarketing: "Here is your marketing claims..." } });
-                                }
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: { type: "CONTINUE", payload: { CreateMarketing: "Here is your marketing claims..." } },
+                                    }
+                                });
                             }, 1);
                         },
                     },
@@ -229,9 +264,12 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                         implementation: (context: Context, event?: MachineEvent) => {
                             setTimeout(() => {
                                 // TODO all real implementation
-                                if (callback) {
-                                    callback({ type: "CONTINUE", payload: { GenerateProductImage: "https://someurl.com" } });
-                                }
+                                dispatch({
+                                    type: ReasonDemoActionTypes.SET_STATE,
+                                    value: {
+                                        event: { type: "CONTINUE", payload: { GenerateProductImage: "https://someurl.com" } },
+                                    }
+                                });
                             }, 1);
                         },
                     },
@@ -259,7 +297,7 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                     },
                 ]
             ]),
-        [callback],
+        [dispatch],
     );
 
     const onSubmit = useCallback(async () => {
@@ -384,6 +422,10 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
             value: {
                 states: result,
                 solution: solverSolution,
+                functions: sampleCatalog,
+                currentState: undefined,
+                context: undefined,
+                event: undefined,
             }
         });
         setIsLoading(false);
@@ -395,11 +437,11 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
         states,
         onSubmit,
         isLoading,
-        functions: sampleCatalog,
         componentToRender,
         currentState,
         context,
         setComponentToRender,
+        functions,
     };
 }
 
@@ -412,12 +454,11 @@ export default function ReasonDemo() {
     );
 
     const ref = useRef<TextArea>(null);
-    const { states, onSubmit, isLoading, functions, componentToRender, currentState, context, setComponentToRender } = useLogic({ ref });
-    const props = { functions, states: states! }
+    const { functions, onSubmit, isLoading, componentToRender, currentState, context, setComponentToRender } = useLogic({ ref });
 
     useEffect(() => {
         console.log(`The current state is: ${currentState}`);
-        const component = (currentState) ? functions.get(currentState)?.component : null;
+        const component = (currentState) ? functions?.get(currentState)?.component : null;
         console.log(`The component to render associated with the state is: ${component}`);
         if (component && context) {
             setComponentToRender(component(context));
@@ -427,7 +468,7 @@ export default function ReasonDemo() {
     }, [currentState, context, functions, setComponentToRender]);
 
     return (
-        <Interpreter {...props}>
+        <Interpreter>
             <div style={{ display: "flex", flexDirection: "row", height: "100vh" }}>
                 <div style={{ flex: 1, marginRight: "20px" }}>
                     {" "}

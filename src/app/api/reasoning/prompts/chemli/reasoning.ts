@@ -2,8 +2,11 @@
 // you can replace this with your a call to DB, API, etc
 async function getTrainingData() {
   const data = `
-    Q: 1. Unsupported question
-  A: [
+  For example of the task list is:
+  1. Unsupported question
+
+  Your response is:
+  [
   {
     "id": "UnsupportedQuestion",
     "transitions": [
@@ -20,33 +23,13 @@ async function getTrainingData() {
     "type": "final"
   }
 ]
-Result: Correct
-Explanation: The question is unsupported and the transitions are correctly defined
 
-Q: 1. Unsafe question
-A: [
-  {
-    "id": "UnsafeQuestion",
-    "transitions": [
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "success",
-    "type": "final"
-  },
-  {
-    "id": "failure",
-    "type": "final"
-  }
-]
-Result: Correct
-Explanation: The question is unsafe and the transitions are correctly defined
+If the task list is:
+1. Create a new product image for some product name and sku.
+2. If a solution is not found, exit. If a solution is found run regulatory checks
 
-Q: 1. Create a new product image for Sku #1234r lip balm.
-  2. If a solution is not found, exit. If a solution is found run regulatory checks
-A: [
+Your response is:
+[
   {
     "id": "RecallSolutions",
     "transitions": [
@@ -71,268 +54,9 @@ A: [
     "type": "final"
   }
 ]
-Result: Correct
-Explanation: The states are correct and the transitions correctly account for conditionals defined os the user query. The GenerateProductImage transition in the RecallSolutions state is required based on the logic.
 
-Q: 1. Create a new product image for Sku #1234r lip balm.
-  2. If a solution is not found, exit. If a solution is found run regulatory checks
-  A: [
-  {
-    "id": "RecallSolutions",
-    "transitions": [
-      { "on": "CONTINUE", "target": "GenerateProductImage" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "GenerateProductImage",
-    "transitions": [
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "success",
-    "type": "final"
-  },
-  {
-    "id": "failure",
-    "type": "final"
-  }
-]
-Result: Incorrect
-Explanation: The states are correct but the transitions and not correct for the RecallSolutions state. It does not account for conditionals defined os the user query. The RegulatoryCheck transition is required based on the logic:
-{
-    "id": "RecallSolutions",
-    "transitions": [
-      { "on": "CONTINUE", "target": "GenerateProductImage" },
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  }
-
-
-  Q: 1. Recall solution for SKU #sd4323, vanilla face cream
-  2. If a solution is not found, exit. If a solution is found run regulatory checks
-  A: [
-  {
-    "id": "RecallSolutions",
-    "transitions": [
-      { "on": "CONTINUE", "target": "RegulatoryCheck" },
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "RegulatoryCheck",
-    "transitions": [
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "success",
-    "type": "final"
-  },
-  {
-    "id": "failure",
-    "type": "final"
-  }
-]
-Result: Correct
-Explanation: The states are correct and the transitions correctly account for conditionals defined os the user query. The RegulatoryCheck transition is required based on the logic.
-
-Q: 1. Recall solution for SKU #sd4323, vanilla face cream
-  2. If a solution is not found, exit. If a solution is found run regulatory checks
-  A: [
-  {
-    "id": "RecallSolutions",
-    "transitions": [
-      { "on": "CONTINUE", "target": "RegulatoryCheck" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "RegulatoryCheck",
-    "transitions": [
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "success",
-    "type": "final"
-  },
-  {
-    "id": "failure",
-    "type": "final"
-  }
-]
-Result: Incorrect
-Explanation: The states are correct but the transitions and not correct for the RecallSolutions state. It does not account for conditionals defined os the user query. The RegulatoryCheck transition is required based on the logic.
-
-  Q: 1. Generate the ingredients list
-  3. Perform an ingredients database search for relevant ingredients.
-  4. In parallel run regulatory checks and concentration estimation for the retrieved ingredients.
-  5. Once those steps are complete, perform a formula simulation.
-  6. Have an expert review the generated formula.
-  7. Perform lab testing.
-  8. Evaluate the complete tested formula.
-  9. Generate the manufacturing instructions.
-  A: [
-  {
-    "id": "GenerateIngredientsList",
-    "transitions": [
-      { "on": "CONTINUE", "target": "IngredientDatabase" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "IngredientDatabase",
-    "transitions": [
-      { "on": "CONTINUE", "target": "parallelChecks" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "parallelChecks",
-    "type": "parallel",
-    "states": [
-      {
-        "id": "RegulatoryCheck",
-        "transitions": [
-          { "on": "CONTINUE", "target": "success" },
-          { "on": "ERROR", "target": "failure" }
-        ]
-      },
-      {
-        "id": "ConcentrationEstimation",
-        "transitions": [
-          { "on": "CONTINUE", "target": "success" },
-          { "on": "ERROR", "target": "failure" }
-        ]
-      },
-      {
-        "id": "success",
-        "type": "final"
-      },
-      {
-        "id": "failure",
-        "type": "final"
-      }
-    ],
-    "onDone": [{"target": "FormulationSimulation"}]
-  },
-  {
-    "id": "FormulationSimulation",
-    "transitions": [
-      { "on": "CONTINUE", "target": "ExpertReview" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "ExpertReview",
-    "transitions": [
-      { "on": "CONTINUE", "target": "LabTesting" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "LabTesting",
-    "transitions": [
-      { "on": "CONTINUE", "target": "Evaluation" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "Evaluation",
-    "transitions": [
-      { "on": "CONTINUE", "target": "ManufacturingInstructions" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "ManufacturingInstructions",
-    "transitions": [
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "success",
-    "type": "final"
-  },
-  {
-    "id": "failure",
-    "type": "final"
-  }
-
-]
-Result: Correct
-Explanation: The states and transitions are correct and the use of parallel states is correctly defined.
-
-  Q: 1. Recall solution for 2024 citrus shower gel line
-  2. If a solution is found, generate marketing claims using the output of step 1. If the solution is not found exit.
-  A: [
-  {
-    "id": "RecallSolutions",
-    "transitions": [
-      { "on": "CONTINUE", "target": "CreateMarketing" },
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "CreateMarketing",
-    "transitions": [
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "success",
-    "type": "final"
-  },
-  {
-    "id": "failure",
-    "type": "final"
-  }
-]
-Result: Correct
-Explanation: The states are correct and the transitions correctly account for conditionals defined os the user query. The CreateMarketing transition is required based on the logic.
-
-  Q: 1. Recall solution for peppermint lip balm sku# 12334d
-  2. If a solution is found, generate a product image using the output of step 1. If the solution is not found exit.
-  A: [
-  {
-    "id": "RecallSolutions",
-    "transitions": [
-      { "on": "CONTINUE", "target": "GenerateProductImage" },
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "GenerateProductImage",
-    "transitions": [
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "success",
-    "type": "final"
-  },
-  {
-    "id": "failure",
-    "type": "final"
-  }
-]
-Result: Correct
-Explanation: The states are correct and the transitions correctly account for conditionals defined os the user query. The GenerateProductImage transition is required based on the logic.
-
-
-Q: 1. Recall any existing solutions for peppermint lip balm
+IF the task list is:
+1. Recall any existing solutions for peppermint lip balm
 2. If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list.
 3. Perform an ingredients database search for relevant ingredients.
 4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
@@ -346,7 +70,9 @@ Q: 1. Recall any existing solutions for peppermint lip balm
 12. Conduct market research.
 13. Generate marketing claims using the output of step 11
 14. Generate a product image.
-  A: [
+
+Your response is:
+[
   {
     "id": "RecallSolutions",
     "transitions": [
@@ -462,144 +188,7 @@ Q: 1. Recall any existing solutions for peppermint lip balm
     "id": "failure",
     "type": "final"
   }
-]
-Result: Correct
-Explanation: The states and transitions are correct and the use of parallel states is correctly defined. The GenerateIngredientsList transition in the RecallSolutions state is required based on the logic.
-
-Q: 1. Recall any existing solutions for face creme that includes blueberries.
-2. If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list.
-3. Perform an ingredients database search for relevant ingredients.
-4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
-5. Once those steps are complete, perform a formula simulation.
-6. Have an expert review the generated formula.
-7. Perform lab testing.
-8. Evaluate the complete tested formula.
-9. Generate the manufacturing instructions.
-10. Have an expert review the generated manufacturing instructions.
-11. Generate the manufacturing instructions.
-12. Conduct market research.
-13. Generate marketing claims using the output of step 11
-14. Generate a product image.
-  A: [
-  {
-    "id": "RecallSolutions",
-    "transitions": [
-      { "on": "CONTINUE", "target": "GenerateIngredientsList" },
-      { "on": "CONTINUE", "target": "IngredientDatabase" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "GenerateIngredientsList",
-    "transitions": [
-      { "on": "CONTINUE", "target": "IngredientDatabase" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "IngredientDatabase",
-    "transitions": [
-      { "on": "CONTINUE", "target": "parallelChecks" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "parallelChecks",
-    "type": "parallel",
-    "states": [
-      {
-        "id": "RegulatoryCheck",
-        "transitions": [
-          { "on": "CONTINUE", "target": "success" },
-          { "on": "ERROR", "target": "failure" }
-        ]
-      },
-      {
-        "id": "ConcentrationEstimation",
-        "transitions": [
-          { "on": "CONTINUE", "target": "success" },
-          { "on": "ERROR", "target": "failure" }
-        ]
-      },
-      {
-        "id": "success",
-        "type": "final"
-      },
-      {
-        "id": "failure",
-        "type": "final"
-      }
-    ],
-    "onDone": [{"target": "FormulationSimulation"}]
-  },
-  {
-    "id": "FormulationSimulation",
-    "transitions": [
-      { "on": "CONTINUE", "target": "ExpertReview" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "ExpertReview",
-    "transitions": [
-      { "on": "CONTINUE", "target": "LabTesting" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "LabTesting",
-    "transitions": [
-      { "on": "CONTINUE", "target": "Evaluation" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "Evaluation",
-    "transitions": [
-      { "on": "CONTINUE", "target": "ManufacturingInstructions" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "ManufacturingInstructions",
-    "transitions": [
-      { "on": "CONTINUE", "target": "MarketResearch" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "MarketResearch",
-    "transitions": [
-      { "on": "CONTINUE", "target": "CreateMarketing" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "CreateMarketing",
-    "transitions": [
-      { "on": "CONTINUE", "target": "GenerateProductImage" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "GenerateProductImage",
-    "transitions": [
-      { "on": "CONTINUE", "target": "success" },
-      { "on": "ERROR", "target": "failure" }
-    ]
-  },
-  {
-    "id": "success",
-    "type": "final"
-  },
-  {
-    "id": "failure",
-    "type": "final"
-  }
-]
-Result: Correct
-Explanation: The states and transitions are correct and the use of parallel states is correctly defined. The GenerateIngredientsList transition in the RecallSolutions state is required based on the logic.
-  `;
+]`;
 
   return data;
 }
@@ -1327,27 +916,14 @@ A: 1. Unsupported question
 
 export async function programmer(query: string, functionCatalog: string) {
   const system = `
-  You are Chemli, the State Machine Architect.
-
-  Characteristics:
-
-  Methodical: Chemli approaches tasks in a structured and systematic way, ensuring that each component of the state machine is accurately represented in the DSL.
-  Detail-Oriented: Chemli pays close attention to the details in the user's instructions, ensuring that each step is precisely mapped to your training data.
-  Knowledgeable: Chemli has a deep understanding of state machine configurations and the DSL's structure, enabling effective translation of user requirements into the DSL format.
-  Clear and Concise: Chemli communicates in a clear and unambiguous manner, ensuring that the DSL representations are easy to understand and follow.
-  Problem-Solver: Chemli is adept at identifying and resolving ambiguities or gaps in the user's instructions, ensuring a seamless translation process.
-
+  You are X-Reason, the State Machine Architect. X-Reason outputs state machines in response to the provided list of steps using the X-Reason DSL.
   Approach:
-
-  Chemli carefully analyzes the user's query, breaking it down into discrete steps.
-  If a step can't be mapped mapped to a function found in your training data, Chemli judiciously decides to omit it to maintain the integrity of the state machine.
-  Chemli never outputs a state where the id is not found in your training data
-  Chemli constructs the StateConfig array with precision, ensuring that all transitions, conditions, and actions are correctly represented.
-  In case of parallel states, Chemli meticulously organizes them under a parent state while maintaining the clarity of the structure.
-  Chemli remains focused on the goal of creating a functional and efficient state machine configuration that meets the user's requirements.
-  Chemli is never chatty.
-  Chemli always respond in JSON that conforms to the the Chemli DSL.
-  ### Start Chemli DSL TypeScript definition ###
+  X-Reason carefully analyzes the user's query, breaking it down into discrete steps.
+  If a step can't be mapped mapped to a function found in your training data, X-Reason judiciously decides to omit it to maintain the integrity of the state machine.
+  X-Reason never outputs a state where the id is not found in your training data
+  X-Reason is never chatty.
+  X-Reason always respond in JSON that conforms to the the X-Reason DSL.
+  ### Start X-Reason DSL TypeScript definition ###
   \`\`\`
   export type StateConfig = {
   id: string;
@@ -1363,20 +939,13 @@ export async function programmer(query: string, functionCatalog: string) {
   }>;
   states?: StateConfig[];
  };
- ### End Chemli DSL TypeScript definition ###
+ ### End X-Reason DSL TypeScript definition ###
   `;
   const trainingData = await getTrainingData();
-  const user = `
-  Output the state machine for the steps below using the Chemli DSL and your training data.
-  ### Start User Query ###
-  ${query}
-  ### End User Query ###
-  ### Start training data ###
-  ${trainingData}
-  ### End training data ###
+  const user = `Output the X-Reason state machine.
 
 Let's take this step by step:
-1. Construct the state machine based on the supplied steps
+1. Construct the state machine based on the supplied steps using the X-Reason DSL
 2. If states are to be executed in parallel be sure to use the type: 'parallel' state node (examples below). 
 Note parallel states nodes are required to target their own success and failure nodes and there must be an onDone attribute!!!
 \`\`\`
@@ -1410,9 +979,7 @@ Note parallel states nodes are required to target their own success and failure 
     ]
   },
 \`\`\`
-3. When instructions include "if then else" statements include multiple transitions, one for each condition. For example:
-1. Recall solution for vanilla face cream
-2. If a solution is not found, exit. If a solution is found run regulatory checks
+3. When instructions include "if then else" statements include multiple transitions, one for each condition. For example if th instructions are: "1. Recall solution for vanilla face cream 2. If a solution is not found, exit. If a solution is found run regulatory checks" the state machine would be:
 [
   {
     "id": "RecallSolutions",
@@ -1438,11 +1005,26 @@ Note parallel states nodes are required to target their own success and failure 
     "type": "final"
   }
 ]
-In this solution if the condition function of RecallSolutions returns true (a solution was found) the state machine will transition to RegulatoryCheck. If not the success state will be targeted.
-State id values must be one of the following taken from the states catalog. DO NOT INVENT YOUR OWN STATES!!!
-${functionCatalog}
+In this solution "If a solution is not found, exit." is represented by the { "on": "CONTINUE", "target": "success" } transition and "If a solution is found run regulatory checks" is represented by the { "on": "CONTINUE", "target": "RegulatoryCheck" } transition.
+Let's looks at another example of if/else logic: 
+"If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list." would result in the following state config:
+{
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "IngredientDatabase" },
+      { "on": "CONTINUE", "target": "GenerateIngredientsList" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+}
+In this solution "If an existing solution can be used proceed to an ingredients database search" is represented by the { "on": "CONTINUE", "target": "IngredientDatabase" } transition and "Else generate the ingredients list." is represented by the { "on": "CONTINUE", "target": "GenerateIngredientsList" } transition
+There are only two acceptable event values for the "on" attribute: "CONTINUE" and "ERROR". The "ERROR" event can only target the "failure" state
+4. Make sure all state ID values in the state machine correspond to a value found in the examples below. DO NOT INVENT YOUR OWN STATES!!!
+${trainingData}
 
-Only responds in JSON using the Chemli DSL.
+If steps are
+${query}
+
+The state machine is?
 `;
 
   return { user, system };
@@ -1551,40 +1133,10 @@ export async function aiTransition(taskList: string, currentState: string, paylo
 }
 
 export async function evaluate(query: string, states: string) {
-  const system = `
-  You are Chemli, the AI evaluator of state machine solutions.
-
-  Characteristics:
-  Methodical: Chemli approaches tasks in a structured and systematic way, ensuring that each component of the state machine is accurately represented in the DSL.
-  Detail-Oriented: Chemli pays close attention to the details in the user's instructions, ensuring that each step is precisely mapped to your training data.
-  Knowledgeable: Chemli has a deep understanding of state machine configurations and the DSL's structure, enabling effective translation of user requirements into the DSL format.
-  Clear and Concise: Chemli communicates in a clear and unambiguous manner, ensuring that the DSL representations are easy to understand and follow.
-  Problem-Solver: Chemli is adept at identifying and resolving ambiguities or gaps in the user's instructions, ensuring a seamless translation process.
-
-  Approach:
-  Chemli carefully analyzes the user's query, the state machine config, and issues it's evaluation
-  Chemli remains focused on the goal of evaluating the state machine configuration based on the user's query.
-  Chemli is never chatty.
-  Chemli always respond in JSON that conforms to the the Chemli DSL.
-  ### Start Chemli DSL TypeScript definition ###
-  \`\`\`
-  // rating is an integer between 0 and 5
-  // correct indicates of the state machine id correct or not based on the user query
-export type EvaluatorResult = { rating: number; correct?: boolean };
- ### End Chemli DSL TypeScript definition ###
-  `;
+  const system = `You are X-Reason Evaluator, the X-Reason state machine evaluator. Your job os to rate the quality of AI generated state machines.`;
   const trainingData = await getEvaluationTrainingData();
-  const user = `
-  ### Start training data ###
-  ${trainingData}
-  ### End training data ###
-  Output the state machine for the steps below using the Chemli DSL and your training data.
-  ### Start User Query ###
-  ${query}
-  ${states}
-  ### End User Query ###
-
-Only responds in JSON using the Chemli DSL, for example:  { rating: 4, correct: true }.
+  const user = `Evaluate the quality of the generated state machine in the previous messages.
+Only responds in JSON using the X-Reason DSL, for example:  { rating: 4, correct: true }.
 `;
 
   return { user, system };

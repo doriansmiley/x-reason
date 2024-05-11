@@ -2,29 +2,33 @@ import { useCallback, useMemo } from "react";
 import { Button } from "@blueprintjs/core";
 
 import { engineV1 as engine } from "@/app/api/reasoning";
-import { useReasonDemoStore } from "@/app/context/ReasoningDemoContext";
+import { useReasonDemoStore, useReasonDemoDispatch, ReasonDemoActionTypes } from "@/app/context/ReasoningDemoContext";
 import { aiTransition } from "@/app/api/reasoning/prompts";
 import { FormulaTable } from ".";
 
 export default function RecallSolution() {
-    const { states, currentState, callback, query, solution } = useReasonDemoStore();
+    const { states, currentState, query, solution } = useReasonDemoStore();
+    const dispatch = useReasonDemoDispatch();
     const onNext = useCallback(async (sampleRecalledSolution: string) => {
-        if (callback) {
-            const payload = {
-                RecallSolutions: sampleRecalledSolution,
-            };
-            // this is an example of a non deterministic function that is invoked as part of evaluating transitions
-            // it uses the default LLM reasoning function included as part of the engine.logic.transition function
-            // This is just an example of how to use LLMs to reason about transition logic
-            const state = states?.find((item) => item.id === currentState);
-            const result = await engine.logic.transition(solution!, JSON.stringify(state), JSON.stringify(payload), aiTransition);
+        const payload = {
+            RecallSolutions: sampleRecalledSolution,
+        };
+        // this is an example of a non deterministic function that is invoked as part of evaluating transitions
+        // it uses the default LLM reasoning function included as part of the engine.logic.transition function
+        // This is just an example of how to use LLMs to reason about transition logic
+        const state = states?.find((item) => item.id === currentState);
+        const result = await engine.logic.transition(solution!, JSON.stringify(state), JSON.stringify(payload), aiTransition);
 
-            callback({
-                type: result,
-                payload
-            });
-        }
-    }, [callback, solution, currentState, states]);
+        dispatch({
+            type: ReasonDemoActionTypes.SET_STATE,
+            value: {
+                event: {
+                    type: result,
+                    payload,
+                },
+            }
+        });
+    }, [dispatch, solution, currentState, states]);
 
     interface IPhaseStep {
         [key: string]: string;

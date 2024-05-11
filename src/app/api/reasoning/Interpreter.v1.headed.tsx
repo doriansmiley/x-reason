@@ -1,33 +1,26 @@
 "use client";
 
-import { StateMachine, interpret, Interpreter } from "xstate";
+import { StateMachine, interpret, Interpreter as IInterpreter } from "xstate";
 import { MutableRefObject, useCallback, useEffect, useState } from "react";
 
-import { useReasonDemoDispatch, ReasonDemoActionTypes } from "@/app/context/ReasoningDemoContext";
-import { programV1, MachineEvent, InterpreterInput, Context, StateConfig } from ".";
+import { useReasonDemoDispatch, ReasonDemoActionTypes, useReasonDemoStore } from "@/app/context/ReasoningDemoContext";
+import { programV1, MachineEvent, InterpreterInput, Context, StateConfig, Task } from ".";
 
-// Type guard to check if target is a MutableRefObject
-const isMutableRefObject = (ref: any): ref is MutableRefObject<EventTarget | null> => {
-    return 'current' in ref;
-};
 
-function useLogic(input: InterpreterInput) {
-    const { functions, states, context } = input;
-    const [currentStates, setCurrentStates] = useState<StateConfig[]>();
-    const [interpreter, setInterpreter] = useState<Interpreter<Context, any, MachineEvent>>();
-    const [event, setEvent] = useState<MachineEvent>();
+// Using forwardRef to wrap your component allows you to receive a ref from a parent component
+export default function Interpreter({ children }: { children: React.ReactNode }) {
     const dispatch = useReasonDemoDispatch();
+    const { context, states, event, functions } = useReasonDemoStore();
+    const [currentStates, setCurrentStates] = useState<StateConfig[]>();
+    const [interpreter, setInterpreter] = useState<IInterpreter<Context, any, MachineEvent>>();
+    const [currentFunctions, setCurrentFunctions] = useState<Map<string, Task>>();
 
     useEffect(() => {
-        if (states.length === 0) {
+        if (!states || states.length === 0 || !functions) {
             return;
         }
 
-        if (interpreter?.initialized && !interpreter?.getSnapshot().done) {
-            if (event) {
-                interpreter.send(event.type, { payload: event.payload });
-            }
-        } else if (currentStates !== states) {
+        if (currentStates !== states || functions !== currentFunctions) {
             const result: StateMachine<Context, any, MachineEvent> = programV1(states, functions);
             const initialContext = context || {
                 status: 0,
@@ -54,43 +47,19 @@ function useLogic(input: InterpreterInput) {
             //@ts-ignore
             setInterpreter(instance);
             setCurrentStates(states);
-        }
+            setCurrentFunctions(functions);
 
-    }, [context, functions, setInterpreter, states, interpreter, event, currentStates, dispatch]);
-
-
-    const callback = useCallback((event: MachineEvent) => {
-        if (!event || !event.type || !event.payload) {
-            return;
-        }
-
-        if (interpreter?.getSnapshot().done) {
-            console.warn(`Attempted to send event "${event.type}" to a stopped service. The event was not sent.`);
-            return;
-        }
-
-        console.log(`calling machineExecution.send type: ${event.type} payload: ${event.payload}`);
-        setEvent(event);
-    }, [interpreter]);
-
-    return { callback, interpreter };
-}
-// Using forwardRef to wrap your component allows you to receive a ref from a parent component
-export default function Interpreter({ functions, states, children }: InterpreterInput & { children: React.ReactNode }) {
-    const { callback, interpreter } = useLogic({ functions, states });
-    const dispatch = useReasonDemoDispatch();
-
-    useEffect(() => {
-        dispatch({
-            type: ReasonDemoActionTypes.SET_STATE,
-            value: {
-                callback,
+        } else if (event && interpreter?.initialized && !interpreter?.getSnapshot().done) {
+            if (interpreter?.getSnapshot().done) {
+                console.warn(`Attempted to send event "${event.type}" to a stopped service. The event was not sent.`);
+            } else {
+                interpreter.send(event.type, { payload: event.payload });
             }
-        });
-        if (interpreter && !interpreter.initialized) {
+        } else if (interpreter && !interpreter.initialized) {
             interpreter.start();
         }
-    }, [dispatch, callback, interpreter]);
+
+    }, [context, functions, states, interpreter, currentFunctions, event, currentStates, dispatch]);
 
     // @ts-ignore
     return <div>{children}</div>;

@@ -88,12 +88,14 @@ async function program(query: string, functionCatalog: string, programmer: Promp
                 { role: 'system', content: system },
                 { role: 'user', content: user },
                 {
-                    role: 'user', content: `your generated solution:
-                ${unwrapped}
-                generated the following error:
+                    role: 'user', content: `your previous answer generated the following errors:
                 Unknown state ID encountered: ${notFound.join(',')}
-                Replace the valid state ID's with valid ones found in the function catalog!
-                Only respond with the updated JSON! Your response will be sent to JSON.parse
+                Replace the unknown state IDs with valid IDs found in the function catalog below:
+                ###### start function catalog ######
+                ${functionCatalog}
+                ###### end function catalog ######
+                Do not modify the state machine in any other way!
+                Only respond with the updated JSON and don't be chatty! Your response will be sent to JSON.parse
                 ` },
             ],
             model: "gpt-4",
@@ -125,6 +127,12 @@ async function evaluate(input: EvaluationInput, evaluate: Prompt): Promise<Evalu
 
         const machineExecution = interpret(withContext);
 
+        evaluation = {
+            rating: 5,
+            correct: true,
+        }
+        /* TODO we need to fix this by allowing it to receive the message history so the model can evaluate the conversation
+        then the model can evaluate the conversation
         // Now have the evaluator evaluate the result
         const result = await chatCompletion({
             messages: [
@@ -161,6 +169,7 @@ async function evaluate(input: EvaluationInput, evaluate: Prompt): Promise<Evalu
             unwrapped = extractJsonFromBackticks(value) || value;
             evaluation = JSON.parse(unwrapped);
         }
+        */
     } catch (e) {
         return {
             rating: 0,

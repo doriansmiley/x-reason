@@ -1,6 +1,6 @@
 "use client";
 import { ActionType, makeStore } from "@/app/utils";
-import { MachineEvent, Context, StateConfig } from "@/app/api/reasoning";
+import { MachineEvent, Context, StateConfig, Task } from "@/app/api/reasoning";
 
 export type ReasonContextType = {
     callback?: (event: MachineEvent) => void,
@@ -9,6 +9,8 @@ export type ReasonContextType = {
     states?: StateConfig[],
     currentState?: string,
     context?: Context,
+    event?: MachineEvent,
+    functions?: Map<string, Task>;
 };
 
 const appInitialState: ReasonContextType = {
