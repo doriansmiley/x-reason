@@ -41,7 +41,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(500px, 1fr));
+  grid-template-columns: repeat(4, minmax(25%, auto));
   max-width: 100%;
   width: var(--max-width);
 }
@@ -69,6 +69,7 @@
   opacity: 0.6;
   font-size: 0.9rem;
   line-height: 1.5;
+  max-width: 30ch;
 }
 
 .center {

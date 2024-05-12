@@ -1,0 +1,598 @@
+ Q: 1. Unsupported question
+  A: [
+  {
+    "id": "UnsupportedQuestion",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+Result: Correct
+Explanation: The question is unsupported and the transitions are correctly defined
+
+Q: 1. Unsafe question
+A: [
+  {
+    "id": "UnsafeQuestion",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+Result: Correct
+Explanation: The question is unsafe and the transitions are correctly defined
+
+Q: 1. Create a new product image for Sku #1234r lip balm.
+  2. If a solution is not found, exit. If a solution is found run regulatory checks
+A: [
+  {
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "GenerateProductImage" },
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "GenerateProductImage",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+Result: Correct
+Explanation: The states are correct and the transitions correctly account for conditionals defined os the user query. The GenerateProductImage transition in the RecallSolutions state is required based on the logic.
+
+Q: 1. Create a new product image for Sku #1234r lip balm.
+  2. If a solution is not found, exit. If a solution is found run regulatory checks
+  A: [
+  {
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "GenerateProductImage" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "GenerateProductImage",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+Result: Incorrect
+Explanation: The states are correct but the transitions and not correct for the RecallSolutions state. It does not account for conditionals defined os the user query. The RegulatoryCheck transition is required based on the logic:
+{
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "GenerateProductImage" },
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  }
+
+
+  Q: 1. Recall solution for SKU #sd4323, vanilla face cream
+  2. If a solution is not found, exit. If a solution is found run regulatory checks
+  A: [
+  {
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "RegulatoryCheck" },
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "RegulatoryCheck",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+Result: Correct
+Explanation: The states are correct and the transitions correctly account for conditionals defined os the user query. The RegulatoryCheck transition is required based on the logic.
+
+Q: 1. Recall solution for SKU #sd4323, vanilla face cream
+  2. If a solution is not found, exit. If a solution is found run regulatory checks
+  A: [
+  {
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "RegulatoryCheck" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "RegulatoryCheck",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+Result: Incorrect
+Explanation: The states are correct but the transitions and not correct for the RecallSolutions state. It does not account for conditionals defined os the user query. The RegulatoryCheck transition is required based on the logic.
+
+  Q: 1. Generate the ingredients list
+  3. Perform an ingredients database search for relevant ingredients.
+  4. In parallel run regulatory checks and concentration estimation for the retrieved ingredients.
+  5. Once those steps are complete, perform a formula simulation.
+  6. Have an expert review the generated formula.
+  7. Perform lab testing.
+  8. Evaluate the complete tested formula.
+  9. Generate the manufacturing instructions.
+  A: [
+  {
+    "id": "GenerateIngredientsList",
+    "transitions": [
+      { "on": "CONTINUE", "target": "IngredientDatabase" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "IngredientDatabase",
+    "transitions": [
+      { "on": "CONTINUE", "target": "parallelChecks" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "parallelChecks",
+    "type": "parallel",
+    "states": [
+      {
+        "id": "RegulatoryCheck",
+        "transitions": [
+          { "on": "CONTINUE", "target": "success" },
+          { "on": "ERROR", "target": "failure" }
+        ]
+      },
+      {
+        "id": "ConcentrationEstimation",
+        "transitions": [
+          { "on": "CONTINUE", "target": "success" },
+          { "on": "ERROR", "target": "failure" }
+        ]
+      },
+      {
+        "id": "success",
+        "type": "final"
+      },
+      {
+        "id": "failure",
+        "type": "final"
+      }
+    ],
+    "onDone": [{"target": "FormulationSimulation"}]
+  },
+  {
+    "id": "FormulationSimulation",
+    "transitions": [
+      { "on": "CONTINUE", "target": "ExpertReview" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "ExpertReview",
+    "transitions": [
+      { "on": "CONTINUE", "target": "LabTesting" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "LabTesting",
+    "transitions": [
+      { "on": "CONTINUE", "target": "Evaluation" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "Evaluation",
+    "transitions": [
+      { "on": "CONTINUE", "target": "ManufacturingInstructions" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "ManufacturingInstructions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+
+]
+Result: Correct
+Explanation: The states and transitions are correct and the use of parallel states is correctly defined.
+
+  Q: 1. Recall solution for 2024 citrus shower gel line
+  2. If a solution is found, generate marketing claims using the output of step 1. If the solution is not found exit.
+  A: [
+  {
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "CreateMarketing" },
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "CreateMarketing",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+Result: Correct
+Explanation: The states are correct and the transitions correctly account for conditionals defined os the user query. The CreateMarketing transition is required based on the logic.
+
+  Q: 1. Recall solution for peppermint lip balm sku# 12334d
+  2. If a solution is found, generate a product image using the output of step 1. If the solution is not found exit.
+  A: [
+  {
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "GenerateProductImage" },
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "GenerateProductImage",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+Result: Correct
+Explanation: The states are correct and the transitions correctly account for conditionals defined os the user query. The GenerateProductImage transition is required based on the logic.
+
+
+Q: 1. Recall any existing solutions for peppermint lip balm
+2. If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list.
+3. Perform an ingredients database search for relevant ingredients.
+4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
+5. Once those steps are complete, perform a formula simulation.
+6. Have an expert review the generated formula.
+7. Perform lab testing.
+8. Evaluate the complete tested formula.
+9. Generate the manufacturing instructions.
+10. Have an expert review the generated manufacturing instructions.
+11. Generate the manufacturing instructions.
+12. Conduct market research.
+13. Generate marketing claims using the output of step 11
+14. Generate a product image.
+  A: [
+  {
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "GenerateIngredientsList" },
+      { "on": "CONTINUE", "target": "IngredientDatabase" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "GenerateIngredientsList",
+    "transitions": [
+      { "on": "CONTINUE", "target": "IngredientDatabase" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "IngredientDatabase",
+    "transitions": [
+      { "on": "CONTINUE", "target": "parallelChecks" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "parallelChecks",
+    "type": "parallel",
+    "states": [
+      {
+        "id": "RegulatoryCheck",
+        "transitions": [
+          { "on": "CONTINUE", "target": "success" },
+          { "on": "ERROR", "target": "failure" }
+        ]
+      },
+      {
+        "id": "ConcentrationEstimation",
+        "transitions": [
+          { "on": "CONTINUE", "target": "success" },
+          { "on": "ERROR", "target": "failure" }
+        ]
+      },
+      {
+        "id": "success",
+        "type": "final"
+      },
+      {
+        "id": "failure",
+        "type": "final"
+      }
+    ],
+    "onDone": [{"target": "FormulationSimulation"}]
+  },
+  {
+    "id": "FormulationSimulation",
+    "transitions": [
+      { "on": "CONTINUE", "target": "ExpertReview" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "ExpertReview",
+    "transitions": [
+      { "on": "CONTINUE", "target": "LabTesting" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "LabTesting",
+    "transitions": [
+      { "on": "CONTINUE", "target": "Evaluation" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "Evaluation",
+    "transitions": [
+      { "on": "CONTINUE", "target": "ManufacturingInstructions" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "ManufacturingInstructions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "MarketResearch" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "MarketResearch",
+    "transitions": [
+      { "on": "CONTINUE", "target": "CreateMarketing" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "CreateMarketing",
+    "transitions": [
+      { "on": "CONTINUE", "target": "GenerateProductImage" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "GenerateProductImage",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+Result: Correct
+Explanation: The states and transitions are correct and the use of parallel states is correctly defined. The GenerateIngredientsList transition in the RecallSolutions state is required based on the logic.
+
+Q: 1. Recall any existing solutions for face creme that includes blueberries.
+2. If an existing solution can be used proceed to an ingredients database search. Else generate the ingredients list.
+3. Perform an ingredients database search for relevant ingredients.
+4. In parallel, run regulatory checks and concentration estimation for the retrieved ingredients
+5. Once those steps are complete, perform a formula simulation.
+6. Have an expert review the generated formula.
+7. Perform lab testing.
+8. Evaluate the complete tested formula.
+9. Generate the manufacturing instructions.
+10. Have an expert review the generated manufacturing instructions.
+11. Generate the manufacturing instructions.
+12. Conduct market research.
+13. Generate marketing claims using the output of step 11
+14. Generate a product image.
+  A: [
+  {
+    "id": "RecallSolutions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "GenerateIngredientsList" },
+      { "on": "CONTINUE", "target": "IngredientDatabase" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "GenerateIngredientsList",
+    "transitions": [
+      { "on": "CONTINUE", "target": "IngredientDatabase" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "IngredientDatabase",
+    "transitions": [
+      { "on": "CONTINUE", "target": "parallelChecks" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "parallelChecks",
+    "type": "parallel",
+    "states": [
+      {
+        "id": "RegulatoryCheck",
+        "transitions": [
+          { "on": "CONTINUE", "target": "success" },
+          { "on": "ERROR", "target": "failure" }
+        ]
+      },
+      {
+        "id": "ConcentrationEstimation",
+        "transitions": [
+          { "on": "CONTINUE", "target": "success" },
+          { "on": "ERROR", "target": "failure" }
+        ]
+      },
+      {
+        "id": "success",
+        "type": "final"
+      },
+      {
+        "id": "failure",
+        "type": "final"
+      }
+    ],
+    "onDone": [{"target": "FormulationSimulation"}]
+  },
+  {
+    "id": "FormulationSimulation",
+    "transitions": [
+      { "on": "CONTINUE", "target": "ExpertReview" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "ExpertReview",
+    "transitions": [
+      { "on": "CONTINUE", "target": "LabTesting" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "LabTesting",
+    "transitions": [
+      { "on": "CONTINUE", "target": "Evaluation" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "Evaluation",
+    "transitions": [
+      { "on": "CONTINUE", "target": "ManufacturingInstructions" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "ManufacturingInstructions",
+    "transitions": [
+      { "on": "CONTINUE", "target": "MarketResearch" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "MarketResearch",
+    "transitions": [
+      { "on": "CONTINUE", "target": "CreateMarketing" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "CreateMarketing",
+    "transitions": [
+      { "on": "CONTINUE", "target": "GenerateProductImage" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "GenerateProductImage",
+    "transitions": [
+      { "on": "CONTINUE", "target": "success" },
+      { "on": "ERROR", "target": "failure" }
+    ]
+  },
+  {
+    "id": "success",
+    "type": "final"
+  },
+  {
+    "id": "failure",
+    "type": "final"
+  }
+]
+Result: Correct
+Explanation: The states and transitions are correct and the use of parallel states is correctly defined. The GenerateIngredientsList transition in the RecallSolutions state is required based on the logic.
+  
