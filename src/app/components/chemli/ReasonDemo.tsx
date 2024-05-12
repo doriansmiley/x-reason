@@ -7,9 +7,10 @@ import { Context, MachineEvent, Task, engineV1 as engine } from "@/app/api/reaso
 import Interpreter from "@/app/api/reasoning/Interpreter.v1.headed";
 import { ReasonDemoActionTypes, useReasonDemoStore, useReasonDemoDispatch } from "@/app/context/ReasoningDemoContext";
 import { programmer, solver, evaluate } from "@/app/api/reasoning/prompts";
-import { Success, RecallSolution, UnsafeQuestion, UnsupportedQuestion, DefaultComponent } from ".";
+import { LabTesting, ExpertReview, Success, RecallSolution, UnsafeQuestion, UnsupportedQuestion, DefaultComponent } from ".";
 
-function useLogic({ ref }: { ref: RefObject<TextArea> }) {
+
+function useLogic({ ref, stateRef }: { ref: RefObject<TextArea>, stateRef: RefObject<TextArea> }) {
     const { states, currentState, context, solution, functions } = useReasonDemoStore();
     const dispatch = useReasonDemoDispatch();
     const [query, setQuery] = useState<string>();
@@ -158,16 +159,9 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                     "ExpertReview",
                     {
                         description: "Have cosmetic chemists review the proposed formula for feasibility and safety.",
+                        component: (context: Context, event?: MachineEvent) => <ExpertReview />,
                         implementation: (context: Context, event?: MachineEvent) => {
-                            setTimeout(() => {
-                                // TODO all real implementation
-                                dispatch({
-                                    type: ReasonDemoActionTypes.SET_STATE,
-                                    value: {
-                                        event: { type: "CONTINUE", payload: { ExpertReview: "Certified by Dorian Smiley on 2/2/24" } },
-                                    }
-                                });
-                            }, 1);
+                            console.log('ExpertReview Invoked');
                         },
                     },
                 ],
@@ -175,16 +169,9 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
                     "LabTesting",
                     {
                         description: "Test the proposed formula in a laboratory setting to verify its properties and efficacy.",
+                        component: (context: Context, event?: MachineEvent) => <LabTesting />,
                         implementation: (context: Context, event?: MachineEvent) => {
-                            setTimeout(() => {
-                                // TODO all real implementation
-                                dispatch({
-                                    type: ReasonDemoActionTypes.SET_STATE,
-                                    value: {
-                                        event: { type: "CONTINUE", payload: { LabTesting: "Certified by Dorian Smiley on 2/2/24" } },
-                                    }
-                                });
-                            }, 1);
+                            console.log('LabTesting Invoked');
                         },
                     },
                 ],
@@ -431,6 +418,21 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
         setIsLoading(false);
     }, [ref, setQuery, setIsLoading, sampleCatalog, dispatch]);
 
+    const onStateChanges = useCallback<() => void>(() => {
+        const states = JSON.parse(stateRef.current?.textareaElement?.value || "").states;
+        if (states) {
+            dispatch({
+                type: ReasonDemoActionTypes.SET_STATE,
+                value: {
+                    states,
+                    currentState: undefined,
+                    context: undefined,
+                    event: undefined,
+                }
+            });
+        }
+    }, [dispatch, stateRef]);
+
 
     return {
         query,
@@ -442,6 +444,8 @@ function useLogic({ ref }: { ref: RefObject<TextArea> }) {
         context,
         setComponentToRender,
         functions,
+        solution,
+        onStateChanges,
     };
 }
 
@@ -454,7 +458,9 @@ export default function ReasonDemo() {
     );
 
     const ref = useRef<TextArea>(null);
-    const { functions, onSubmit, isLoading, componentToRender, currentState, context, setComponentToRender } = useLogic({ ref });
+    const stateRef = useRef<TextArea>(null);
+
+    const { query, solution, states, functions, onSubmit, isLoading, componentToRender, currentState, context, setComponentToRender, onStateChanges } = useLogic({ ref, stateRef });
 
     useEffect(() => {
         console.log(`The current state is: ${currentState}`);
@@ -469,26 +475,35 @@ export default function ReasonDemo() {
 
     return (
         <Interpreter>
-            <div style={{ display: "flex", flexDirection: "row", height: "100vh" }}>
-                <div style={{ flex: 1, marginRight: "20px" }}>
-                    {" "}
-                    {/* Flex cell for input and button */}
-                    <Card interactive={true} elevation={Elevation.TWO}>
-                        <h2>I am Chemli, the AI Chemical Product Engineer</h2>
-                        {isLoading ? <LoadingSpinner /> : <></>}
-                        <p>Please enter a questions regarding a new cosmetic product, changes to an existing product,
-                            or any other chemical product development questions I can answer. Dont worry, I will let You
-                            know if you ask an unsupported question.
-                        </p>
-                        <p>
-                            <TextArea disabled={isLoading} ref={ref} autoResize={true} intent={Intent.PRIMARY} large={true} />
-                        </p>
-                        <Button disabled={isLoading} onClick={onSubmit}>
-                            Submit
-                        </Button>
-                        {componentToRender}
-                    </Card>
-                </div>
+            <div style={{ display: "flex", flexDirection: "row" }}>
+                {/* Flex cell for input and button */}
+                <Card interactive={true} elevation={Elevation.TWO} style={{ flex: 2 }}>
+                    <h2>I am Chemli, the AI Chemical Product Engineer</h2>
+                    {isLoading ? <LoadingSpinner /> : <></>}
+                    <p>Please enter a questions regarding a new cosmetic product, changes to an existing product,
+                        or any other chemical product development questions I can answer. Dont worry, I will let You
+                        know if you ask an unsupported question.
+                    </p>
+                    <p>
+                        <TextArea disabled={isLoading} ref={ref} autoResize={true} intent={Intent.PRIMARY} large={true} />
+                    </p>
+                    <Button disabled={isLoading} onClick={onSubmit}>
+                        Submit
+                    </Button>
+                    {componentToRender}
+                </Card>
+                <Card interactive={true} elevation={Elevation.TWO} style={{ flex: 1, minWidth: 400 }}>
+                    <h2>Logs</h2>
+                    <h4>States</h4>
+                    <TextArea style={{ width: '100%' }} ref={stateRef} value={JSON.stringify({ states }, null, 2)} disabled={isLoading} autoResize={true} intent={Intent.PRIMARY} large={true} />
+                    <Button disabled={isLoading} onClick={onStateChanges}>
+                        Update and Rerun
+                    </Button>
+                    <h4>Context</h4>
+                    <TextArea style={{ width: '100%' }} value={JSON.stringify({ context }, null, 2)} disabled={isLoading} autoResize={true} intent={Intent.PRIMARY} large={true} />
+                    <h4>Solution</h4>
+                    <TextArea style={{ width: '100%' }} value={JSON.stringify({ solution }, null, 2)} disabled={isLoading} autoResize={true} intent={Intent.PRIMARY} large={true} />
+                </Card>
             </div>
         </Interpreter>
     );

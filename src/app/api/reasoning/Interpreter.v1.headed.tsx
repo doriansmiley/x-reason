@@ -14,6 +14,7 @@ export default function Interpreter({ children }: { children: React.ReactNode })
     const [currentStates, setCurrentStates] = useState<StateConfig[]>();
     const [interpreter, setInterpreter] = useState<IInterpreter<Context, any, MachineEvent>>();
     const [currentFunctions, setCurrentFunctions] = useState<Map<string, Task>>();
+    const [currentEvent, setCurrentEvent] = useState<MachineEvent>()
 
     useEffect(() => {
         if (!states || states.length === 0 || !functions) {
@@ -52,8 +53,9 @@ export default function Interpreter({ children }: { children: React.ReactNode })
         } else if (event && interpreter?.initialized && !interpreter?.getSnapshot().done) {
             if (interpreter?.getSnapshot().done) {
                 console.warn(`Attempted to send event "${event.type}" to a stopped service. The event was not sent.`);
-            } else {
+            } else if (event !== currentEvent) {
                 interpreter.send(event.type, { payload: event.payload });
+                setCurrentEvent(event);
             }
         } else if (interpreter && !interpreter.initialized) {
             interpreter.start();

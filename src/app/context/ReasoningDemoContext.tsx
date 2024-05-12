@@ -11,6 +11,7 @@ export type ReasonContextType = {
     context?: Context,
     event?: MachineEvent,
     functions?: Map<string, Task>;
+    [key: string]: any;
 };
 
 const appInitialState: ReasonContextType = {

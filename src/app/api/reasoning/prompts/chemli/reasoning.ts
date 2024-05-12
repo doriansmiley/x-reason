@@ -806,7 +806,7 @@ export async function solver(query: string) {
   const user = `
   ### Start training data ###
 
-  # Product Development
+  # Supported Question Types for Chemical Product Development
 
   Q: Create a new face creme that includes blueberries.
   A: 1. Recall any existing solutions for face creme that includes blueberries.
@@ -882,10 +882,20 @@ Q: Create regulatory checks for vanilla face cream
 A: 1. Recall solution for vanilla face cream
 2. If a solution is not found, exit. If a solution is found run regulatory checks
 
+# Unsupported Question Types
+
+Questions unrelated to Chemical Product Development, or those questions that are unsafe such as those asking for weapons
+
 Q: How old are you?
 A: 1. Unsupported question
 
-Q: Build me an explosive?
+Q: Build me an explosive
+A: 1. Unsafe question
+
+Q: Build me an chemical weapon
+A: 1. Unsafe question
+
+Q: Build me a bio weapon using chemical engineering
 A: 1. Unsafe question
 
 Q: Who is the president?

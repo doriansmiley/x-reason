@@ -1,22 +1,25 @@
 import { useCallback } from "react";
 import { Button } from "@blueprintjs/core";
 
-import { useReasonDemoStore } from "@/app/context/ReasoningDemoContext";
+import { useReasonDemoDispatch, ReasonDemoActionTypes } from "@/app/context/ReasoningDemoContext";
 
 export default function UnsafeQuestion() {
-    const { callback, query, solution } = useReasonDemoStore();
+    const dispatch = useReasonDemoDispatch();
     const onNext = useCallback(() => {
-        if (callback) {
-            const payload = {
-                UnsafeQuestion: 'Unsafe Question',
-                transition: true,
-            };
-            callback({
-                type: "CONTINUE",
-                payload
-            });
-        }
-    }, [callback]);
+        const payload = {
+            UnsafeQuestion: 'Unsafe Question',
+            transition: true,
+        };
+        dispatch({
+            type: ReasonDemoActionTypes.SET_STATE,
+            value: {
+                event: {
+                    type: "CONTINUE",
+                    payload,
+                },
+            }
+        });
+    }, [dispatch]);
 
     return (<div>
         <h1>Unsafe Question</h1>
