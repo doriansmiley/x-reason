@@ -1028,7 +1028,10 @@ Let's looks at another example of if/else logic:
 }
 In this solution "If an existing solution can be used proceed to an ingredients database search" is represented by the { "on": "CONTINUE", "target": "IngredientDatabase" } transition and "Else generate the ingredients list." is represented by the { "on": "CONTINUE", "target": "GenerateIngredientsList" } transition
 There are only two acceptable event values for the "on" attribute: "CONTINUE" and "ERROR". The "ERROR" event can only target the "failure" state
-4. Make sure all state ID values in the state machine correspond to a value found in the examples below. DO NOT INVENT YOUR OWN STATES!!!
+4. Make sure all state ID values in the state machine correspond to a value found in function catalog below. DO NOT INVENT YOUR OWN STATES!!!
+Function Catalog:
+${functionCatalog}
+
 ${trainingData}
 
 If steps are

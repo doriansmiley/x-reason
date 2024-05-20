@@ -8,6 +8,7 @@ import Interpreter from "@/app/api/reasoning/Interpreter.v1.headed";
 import { ReasonDemoActionTypes, useReasonDemoStore, useReasonDemoDispatch } from "@/app/context/ReasoningDemoContext";
 import { programmer, solver, evaluate } from "@/app/api/reasoning/prompts";
 import { LabTesting, ExpertReview, Success, RecallSolution, UnsafeQuestion, UnsupportedQuestion, DefaultComponent } from ".";
+import LocalStorage from "../storage/LocalStorage";
 
 
 function useLogic({ ref, stateRef }: { ref: RefObject<TextArea>, stateRef: RefObject<TextArea> }) {
@@ -493,7 +494,9 @@ export default function ReasonDemo() {
                     {componentToRender}
                 </Card>
                 <Card interactive={true} elevation={Elevation.TWO} style={{ flex: 1, minWidth: 400 }}>
-                    <h2>Logs</h2>
+                    <h2>Solution Controls</h2>
+                    <h4>Saved Solutions</h4>
+                    <LocalStorage />
                     <h4>States</h4>
                     <TextArea style={{ width: '100%' }} ref={stateRef} value={JSON.stringify({ states }, null, 2)} disabled={isLoading} autoResize={true} intent={Intent.PRIMARY} large={true} />
                     <Button disabled={isLoading} onClick={onStateChanges}>
