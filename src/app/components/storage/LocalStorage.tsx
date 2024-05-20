@@ -89,7 +89,7 @@ const LocalStorage = () => {
                 Delete Solution
             </Button>
             <Button intent={Intent.SUCCESS} onClick={handleLoadSolution}>
-                Load Selected Solution
+                Load Solution
             </Button>
 
             <Dialog
