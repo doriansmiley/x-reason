@@ -2,21 +2,24 @@
 
 import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, Elevation, TextArea, Intent, Spinner, SpinnerSize } from "@blueprintjs/core";
+import { useSearchParams } from 'next/navigation';
 
 import { engineV1 as engine } from "@/app/api/reasoning";
 import Interpreter from "@/app/api/reasoning/Interpreter.v1.headed";
 import { EngineTypes, ReasonDemoActionTypes, useReasonDemoStore, useReasonDemoDispatch } from "@/app/context/ReasoningDemoContext";
 import { DefaultComponent, Success } from ".";
-import LocalStorage from "../storage/LocalStorage";
+import { LocalStorage } from "@/app/components";
 
 
 function useLogic({ ref, stateRef }: { ref: RefObject<TextArea>, stateRef: RefObject<TextArea> }) {
+    const searchParams = useSearchParams();
+    const engineType = searchParams.get('engineType') as EngineTypes || EngineTypes.CHEMLI;
     const { states, currentState, context, solution, functions, factory } = useReasonDemoStore();
     const dispatch = useReasonDemoDispatch();
     const [query, setQuery] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
     const [componentToRender, setComponentToRender] = useState(() => (<div></div>));
-    const { programmer, solver, evaluate, getFunctionCatalog, getToolsCatalog } = useMemo(() => factory(EngineTypes.CHEMLI)(context!), [factory, context]);
+    const { programmer, solver, evaluate, getFunctionCatalog, getToolsCatalog } = useMemo(() => factory(engineType)(context!), [factory, context, engineType]);
 
     // TODO figure out how to manage the available functions,I think these should be exposed via DI
     const sampleCatalog = useMemo(
