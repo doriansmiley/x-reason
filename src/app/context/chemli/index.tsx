@@ -370,10 +370,18 @@ function getToolsCatalog() {
     ]);
 }
 
+function getMetaData() {
+    return {
+        title: 'I am Chemli, the AI Chemical Product Engineer',
+        description: 'Please enter a questions regarding a new cosmetic product, changes to an existing product, or any other chemical product development questions I can answer. Don\'t worry, I will let You know if you ask an unsupported question.',
+    }
+}
+
 export {
     programmer as chemliProgrammer,
     solver as chemliSolver,
     evaluate as chemliEvaluate,
     getFunctionCatalog as chemliFunctionCatalog,
     getToolsCatalog as chemliToolsCatalog,
+    getMetaData as chemliMetaData,
 }

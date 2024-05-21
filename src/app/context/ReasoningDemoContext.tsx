@@ -1,7 +1,8 @@
 "use client";
 import { ActionType, makeStore, factory } from "@/app/utils";
 import { MachineEvent, Context, StateConfig, Task, Prompt } from "@/app/api/reasoning";
-import { chemliEvaluate, chemliSolver, chemliProgrammer, chemliFunctionCatalog, chemliToolsCatalog } from "./chemli";
+import { chemliEvaluate, chemliSolver, chemliProgrammer, chemliFunctionCatalog, chemliToolsCatalog, chemliMetaData } from "./chemli";
+import { regieEvaluate, regieSolver, regieProgrammer, regieFunctionCatalog, regieToolsCatalog, regieMetaData } from "./regie";
 import { Factory } from "@/app/utils/factory";
 
 export type ReasonContextType = {
@@ -17,6 +18,7 @@ export type ReasonContextType = {
         programmer: Prompt,
         solver: Prompt,
         evaluate: Prompt,
+        getMetadata: () => { title: string, description: string },
         getFunctionCatalog: (dispatch: (action: ActionType) => void) => Map<string, Task>,
         getToolsCatalog: () => Map<string, { description: string }>
     }>;
@@ -34,11 +36,19 @@ const appInitialState: ReasonContextType = {
                 evaluate: chemliEvaluate,
                 getFunctionCatalog: chemliFunctionCatalog,
                 getToolsCatalog: chemliToolsCatalog,
+                getMetadata: chemliMetaData,
             };
         },
         regie: (context: Context) => {
             // TODO
-            return { todo: 'todo' };
+            return {
+                programmer: regieProgrammer,
+                solver: regieSolver,
+                evaluate: regieEvaluate,
+                getFunctionCatalog: regieFunctionCatalog,
+                getToolsCatalog: regieToolsCatalog,
+                getMetadata: regieMetaData,
+            };
         },
     }),
 }

@@ -19,7 +19,7 @@ function useLogic({ ref, stateRef }: { ref: RefObject<TextArea>, stateRef: RefOb
     const [query, setQuery] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
     const [componentToRender, setComponentToRender] = useState(() => (<div></div>));
-    const { programmer, solver, evaluate, getFunctionCatalog, getToolsCatalog } = useMemo(() => factory(engineType)(context!), [factory, context, engineType]);
+    const { programmer, solver, evaluate, getFunctionCatalog, getToolsCatalog, getMetadata } = useMemo(() => factory(engineType)(context!), [factory, context, engineType]);
 
     // TODO figure out how to manage the available functions,I think these should be exposed via DI
     const sampleCatalog = useMemo(
@@ -27,6 +27,7 @@ function useLogic({ ref, stateRef }: { ref: RefObject<TextArea>, stateRef: RefOb
         [dispatch, getFunctionCatalog],
     );
     const toolsCatalog = useMemo(() => getToolsCatalog(), [getToolsCatalog]);
+    const { title, description } = useMemo(() => getMetadata(), [getMetadata]);
 
     const onSubmit = useCallback(async () => {
         setIsLoading(true);
@@ -91,6 +92,8 @@ function useLogic({ ref, stateRef }: { ref: RefObject<TextArea>, stateRef: RefOb
         functions,
         solution,
         onStateChanges,
+        title,
+        description,
     };
 }
 
@@ -105,7 +108,7 @@ export default function ReasonDemo() {
     const ref = useRef<TextArea>(null);
     const stateRef = useRef<TextArea>(null);
 
-    const { query, solution, states, functions, onSubmit, isLoading, componentToRender, currentState, context, setComponentToRender, onStateChanges } = useLogic({ ref, stateRef });
+    const { query, solution, states, functions, onSubmit, isLoading, componentToRender, currentState, context, setComponentToRender, onStateChanges, title, description } = useLogic({ ref, stateRef });
 
     useEffect(() => {
         console.log(`The current state is: ${currentState}`);
@@ -123,12 +126,9 @@ export default function ReasonDemo() {
             <div style={{ display: "flex", flexDirection: "row" }}>
                 {/* Flex cell for input and button */}
                 <Card interactive={true} elevation={Elevation.TWO} style={{ flex: 2 }}>
-                    <h2>I am Chemli, the AI Chemical Product Engineer</h2>
+                    <h2>{title}</h2>
                     {isLoading ? <LoadingSpinner /> : <></>}
-                    <p>Please enter a questions regarding a new cosmetic product, changes to an existing product,
-                        or any other chemical product development questions I can answer. Dont worry, I will let You
-                        know if you ask an unsupported question.
-                    </p>
+                    <p>{description}</p>
                     <p>
                         <TextArea disabled={isLoading} ref={ref} autoResize={true} intent={Intent.PRIMARY} large={true} />
                     </p>
