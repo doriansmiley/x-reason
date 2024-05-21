@@ -22,7 +22,7 @@ async function solve(query: string, solver: Prompt): Promise<string> {
             { role: 'system', content: system },
             { role: 'user', content: user },
         ],
-        model: "gpt-4" // gpt-4-0125-preview, gpt-4
+        model: "gpt-4o" // gpt-4-0125-preview, gpt-4
     });
     const value = result;
     return value || '';
@@ -36,7 +36,7 @@ async function program(query: string, functionCatalog: string, programmer: Promp
             { role: 'system', content: system },
             { role: 'user', content: user },
         ],
-        model: "gpt-4", // gpt-4-0125-preview, gpt-4
+        model: "gpt-4o", // gpt-4-0125-preview, gpt-4
         // response_format: { type: "json_object" }
     });
     const value = result || '';
@@ -61,7 +61,7 @@ async function program(query: string, functionCatalog: string, programmer: Promp
                 Only respond with the updated JSON! Your response will be sent to JSON.parse
                 ` },
             ],
-            model: "gpt-4",
+            model: "gpt-4o",
             //response_format: { type: "json_object" }
         });
         const value = result || '';
@@ -98,7 +98,7 @@ async function program(query: string, functionCatalog: string, programmer: Promp
                 Only respond with the updated JSON and don't be chatty! Your response will be sent to JSON.parse
                 ` },
             ],
-            model: "gpt-4",
+            model: "gpt-4o",
             //response_format: { type: "json_object" }
         });
         const value = result || '';
@@ -189,7 +189,7 @@ async function transition(taskList: string, currentState: string, payload: strin
             { role: 'system', content: system },
             { role: 'user', content: user },
         ],
-        model: "gpt-4-0125-preview", // gpt-4-0125-preview, gpt-4
+        model: "gpt-4o", // gpt-4-0125-preview, gpt-4, gpt-4o
         //response_format: { type: "json_object" } gpt-4-0125-preview
     });
     let value = result!;
@@ -207,7 +207,7 @@ async function transition(taskList: string, currentState: string, payload: strin
                 Do not be chatty!
                 ` },
             ],
-            model: "gpt-4",
+            model: "gpt-4o", // gpt-4-0125-preview, gpt-4, gpt-4o
         });
         value = result!;
         if (currentState.indexOf(value) < 0) {
