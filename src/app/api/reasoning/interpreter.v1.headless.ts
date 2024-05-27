@@ -37,10 +37,7 @@ export default function headlessInterpreter(
     // for more an persisting state visit: https://xstate.js.org/docs/guides/states.html#persisting-state
     instance.start(state);
     const done = () => {
-        if (instance?.initialized) {
-            return instance?.getSnapshot().done;
-        }
-        return false;
+        return instance?.getSnapshot().done;
     }
     const serialize = (state: State<Context, MachineEvent>) => JSON.stringify(state);
     const stop = () => instance.stop();
