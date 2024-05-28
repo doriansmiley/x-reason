@@ -15,6 +15,7 @@ import { engineV1 as engine } from "@/app/api/reasoning";
 type ActionType = {
     type: string;
     value?: Record<string, unknown>;
+    payload?: Record<string, unknown>;
 };
 
 export async function GET(request: NextRequest) {
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
         throw evaluationResult.error || new Error('The provided solution failed evaluation');
     }
 
-    const { done, start, send } = headlessInterpreter(result, functions, dispatch);
+    const { done, start, send, getContext } = headlessInterpreter(result, functions, dispatch);
 
     try {
         console.log('calling start');
@@ -64,7 +65,14 @@ export async function GET(request: NextRequest) {
             console.warn('Exceeded maximum iterations while awaiting results.');
         }
 
-        return Response.json({ response: query });
+        return Response.json({
+            response: {
+                query,
+                result,
+                evaluationResult,
+                context: getContext(),
+            }
+        });
     } catch (e) {
         console.log((e as Error).message);
         console.log((e as Error).stack);

@@ -41,7 +41,8 @@ export default function headlessInterpreter(
     // if state is defined the machine will hydrate from where it left off as defined by the supplied state
     // for more an persisting state visit: https://xstate.js.org/docs/guides/states.html#persisting-state
     const start = () => instance.start(state);
+    const getContext = () => instance.getSnapshot().context
 
     // TODO define an actual interface and think about what to expose
-    return { done, serialize, stop, send, start };
+    return { done, serialize, stop, send, start, getContext };
 }
