@@ -30,6 +30,7 @@
     "@testing-library/react": "^14.1.2",
     "@types/jest": "^29.5.10",
     "@types/node": "^20",
+    "@types/ramda": "^0.30.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/uuid": "^9.0.7",

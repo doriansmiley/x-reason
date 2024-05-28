@@ -35,10 +35,6 @@ function generateStateConfig(state: StateConfig, functionCatalog: Map<string, Ta
     let stateConfig: any = {
         entry: (context: Context, event: MachineEvent) => {
             console.log("Received Event:", event.type);
-            // ignore init events
-            if (event.type === 'xstate.init') {
-                return;
-            }
             context.stack?.push(state.id);
             // if the function is async, we ignore the promise as this is fire and forget.
             // it's up to the function to dispatch the CONTINUE event on the machine to capture results
