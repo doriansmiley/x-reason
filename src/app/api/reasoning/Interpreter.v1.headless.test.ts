@@ -17,21 +17,21 @@ describe('headlessInterpreter', () => {
             transitions: [{ on: 'CONTINUE', target: 'success' }],
         },
         {
-            id: "success",
-            type: "final"
+            id: 'success',
+            type: 'final'
         },
         {
-            id: "failure",
-            type: "final"
+            id: 'failure',
+            type: 'final'
         }
     ];
 
     const mockFunctions = new Map<string, Task>([
         [
-            "mockTask",
+            'mockTask',
             {
                 description:
-                    "mockTask",
+                    'mockTask',
                 // this is an example of a visual state that requires user interaction
                 implementation: (context: Context, event?: MachineEvent) => {
                     console.log('mockTask implementation called');
@@ -39,10 +39,10 @@ describe('headlessInterpreter', () => {
             },
         ],
         [
-            "nextState",
+            'nextState',
             {
                 description:
-                    "nextState",
+                    'nextState',
                 // this is an example of a visual state that requires user interaction
                 implementation: (context: Context, event?: MachineEvent) => {
                     console.log('nextState implementation called');
@@ -56,39 +56,40 @@ describe('headlessInterpreter', () => {
     });
 
     it('should initialize and transition states correctly', () => {
-        const { done, stop, send } = headlessInterpreter(mockStates, mockFunctions, mockDispatch);
+        const { done, start, send } = headlessInterpreter(mockStates, mockFunctions, mockDispatch);
+
+        start();
 
         expect(mockDispatch).toHaveBeenCalledTimes(1);
         expect(mockDispatch).toHaveBeenCalledWith({
-            type: ReasonDemoActionTypes.SET_STATE,
+            type: 'SET_STATE',
             value: expect.objectContaining({
                 currentState: expect.objectContaining({
                     value: 'mockTask',
                     context: {
                         requestId: 'test',
                         status: 0,
-                        stack: [],
+                        stack: ['mockTask'],
                     },
                 }),
             }),
         });
 
         expect(done()).toBe(false);
-
         // Simulate the transition
         send({ type: 'CONTINUE' });
 
         expect(mockDispatch).toHaveBeenCalledTimes(2);
         expect(mockDispatch).toHaveBeenCalledWith({
-            type: ReasonDemoActionTypes.SET_STATE,
+            type: 'SET_STATE',
             value: expect.objectContaining({
                 currentState: expect.objectContaining({
-                    value: 'nextState',
-                    context: {
-                        requestId: 'test',
-                        status: 0,
-                        stack: ["nextState"],
-                    },
+                    'value': 'nextState',
+                }),
+                context: expect.objectContaining({
+                    requestId: 'test',
+                    status: 0,
+                    stack: ['mockTask', 'nextState'],
                 }),
             }),
         });
@@ -100,7 +101,9 @@ describe('headlessInterpreter', () => {
     });
 
     it('should hydrate from the serialized state', () => {
-        const { serialize, stop } = headlessInterpreter(mockStates, mockFunctions, mockDispatch);
+        const { serialize, stop, start } = headlessInterpreter(mockStates, mockFunctions, mockDispatch);
+
+        start();
 
         const currentState = mockDispatch.mock.calls[0][0].value.currentState;
         const serializedState = serialize(currentState);
@@ -109,7 +112,7 @@ describe('headlessInterpreter', () => {
 
         mockDispatch.mockClear();
 
-        const { done, serialize: serializeNew, stop: stopNew, send } = headlessInterpreter(
+        const { done, serialize: serializeNew, stop: stopNew, send, start: startNew } = headlessInterpreter(
             mockStates,
             mockFunctions,
             mockDispatch,
@@ -117,17 +120,19 @@ describe('headlessInterpreter', () => {
             State.create(JSON.parse(serializedState))
         );
 
+        startNew();
+
         expect(mockDispatch).toHaveBeenCalledTimes(1);
         expect(mockDispatch).toHaveBeenCalledWith({
-            type: ReasonDemoActionTypes.SET_STATE,
+            type: 'SET_STATE',
             value: expect.objectContaining({
                 currentState: expect.objectContaining({
-                    "value": "mockTask",
+                    'value': 'mockTask',
                 }),
                 context: expect.objectContaining({
                     requestId: 'test',
                     status: 0,
-                    stack: [],
+                    stack: ['mockTask'],
                 }),
             }),
         });
@@ -137,14 +142,14 @@ describe('headlessInterpreter', () => {
 
         expect(mockDispatch).toHaveBeenCalledTimes(2);
         expect(mockDispatch).toHaveBeenCalledWith({
-            type: ReasonDemoActionTypes.SET_STATE,
+            type: 'SET_STATE',
             value: expect.objectContaining({
                 currentState: expect.objectContaining({
                     value: 'nextState',
                     context: {
                         requestId: 'test',
                         status: 0,
-                        stack: ["nextState"],
+                        stack: ['mockTask', 'nextState'],
                     },
                 }),
             }),
